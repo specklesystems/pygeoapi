@@ -207,7 +207,7 @@ resources:
         providers:
             - type: feature
               name: Speckle
-              data: https://app.speckle.systems/projects/5feae56049/models/9c43d7569c #https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d #https://app.speckle.systems/projects/17b0b76d13/models/4a0dea9d65@9a01ad4fb3
+              data: # https://app.speckle.systems/projects/5feae56049/models/9c43d7569c #https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d #https://app.speckle.systems/projects/17b0b76d13/models/4a0dea9d65@9a01ad4fb3
               id_field: id
               title_field: id
 
