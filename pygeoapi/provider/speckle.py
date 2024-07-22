@@ -387,7 +387,7 @@ class SpeckleProvider(BaseProvider):
             source_application="pygeoapi",
             message="Received commit in pygeoapi",
         )
-        print(f"Rendering project '{stream.name}'")
+        print(f"Rendering project '{stream['name']}'")
         return self.traverse_data(commit_obj)
 
     def traverse_data(self, commit_obj):
