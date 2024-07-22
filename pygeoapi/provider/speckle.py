@@ -72,6 +72,11 @@ class SpeckleProvider(BaseProvider):
 
         super().__init__(provider_def)
 
+        if self.data is None:
+            raise ValueError(
+                "Please provide Speckle project link as an argument, e.g.: 'http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149'"
+            )
+
         from subprocess import run
 
         path = str(self.connector_installation_path(_host_application))

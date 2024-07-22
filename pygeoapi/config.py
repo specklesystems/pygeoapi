@@ -53,16 +53,16 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
     :returns: `dict` of pygeoapi configuration
     """
 
-    if not os.environ.get('PYGEOAPI_CONFIG'):
-        raise RuntimeError('PYGEOAPI_CONFIG environment variable not set')
+    if not os.environ.get("PYGEOAPI_CONFIG"):
+        raise RuntimeError("PYGEOAPI_CONFIG environment variable not set")
 
-    with open(os.environ.get('PYGEOAPI_CONFIG'), encoding='utf8') as fh:
+    with open(os.environ.get("PYGEOAPI_CONFIG"), encoding="utf8") as fh:
         if raw:
             CONFIG = yaml.safe_load(fh)
         else:
             CONFIG = yaml_load(fh)
 
-# passed url: http://localhost:5000/?limit=1000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
+    # passed url: http://localhost:5000/?limit=1000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
     speckle_url = ""
 
     if request is not None:
@@ -94,9 +94,9 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
 
 
 def load_schema() -> dict:
-    """ Reads the JSON schema YAML file. """
+    """Reads the JSON schema YAML file."""
 
-    schema_file = THISDIR / 'schemas' / 'config' / 'pygeoapi-config-0.x.yml'
+    schema_file = THISDIR / "schemas" / "config" / "pygeoapi-config-0.x.yml"
 
     with schema_file.open() as fh2:
         return yaml_load(fh2)
@@ -124,18 +124,18 @@ def config():
 
 @click.command()
 @click.pass_context
-@click.option('--config', '-c', 'config_file', help='configuration file')
+@click.option("--config", "-c", "config_file", help="configuration file")
 def validate(ctx, config_file):
     """Validate configuration"""
 
     if config_file is None:
-        raise click.ClickException('--config/-c required')
+        raise click.ClickException("--config/-c required")
 
     with open(config_file) as ff:
-        click.echo(f'Validating {config_file}')
+        click.echo(f"Validating {config_file}")
         instance = yaml_load(ff)
         validate_config(instance)
-        click.echo('Valid configuration')
+        click.echo("Valid configuration")
 
 
 config.add_command(validate)
