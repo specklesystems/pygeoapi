@@ -150,6 +150,9 @@ def execute_from_flask(api_function, request: Request, *args,
     :returns: A Response instance
     """
 
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
     api_request = APIRequest.from_flask(request, api_.locales)
 
     content: Union[str, bytes]
@@ -171,6 +174,10 @@ def landing_page():
 
     :returns: HTTP response
     """
+
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
     return get_response(api_.landing_page(request))
 
 
@@ -182,6 +189,9 @@ def openapi():
     :returns: HTTP response
     """
 
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
     return get_response(api_.openapi_(request))
 
 
@@ -193,6 +203,9 @@ def conformance():
     :returns: HTTP response
     """
 
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
     return get_response(api_.conformance(request))
 
 
@@ -232,6 +245,9 @@ def collections(collection_id=None):
     :returns: HTTP response
     """
 
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
     return get_response(api_.describe_collections(request, collection_id))
 
 
@@ -245,6 +261,9 @@ def collection_schema(collection_id):
     :returns: HTTP response
     """
 
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
     return get_response(api_.get_collection_schema(request, collection_id))
 
 
@@ -257,6 +276,9 @@ def collection_queryables(collection_id=None):
 
     :returns: HTTP response
     """
+
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
 
     return execute_from_flask(itemtypes_api.get_collection_queryables, request,
                               collection_id)
@@ -277,6 +299,9 @@ def collection_items(collection_id, item_id=None):
 
     :returns: HTTP response
     """
+
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
 
     if item_id is None:
         if request.method == 'GET':  # list items

@@ -29,6 +29,7 @@
 #
 # =================================================================
 
+import copy
 import click
 import json
 from jsonschema import validate as jsonschema_validate
@@ -36,12 +37,14 @@ import logging
 import os
 import yaml
 
+from flask import Request
+
 from pygeoapi.util import to_json, yaml_load, THISDIR
 
 LOGGER = logging.getLogger(__name__)
 
 
-def get_config(raw: bool = False) -> dict:
+def get_config(raw: bool = False, request: Request = None) -> dict:
     """
     Get pygeoapi configurations
 
@@ -58,6 +61,34 @@ def get_config(raw: bool = False) -> dict:
             CONFIG = yaml.safe_load(fh)
         else:
             CONFIG = yaml_load(fh)
+
+# passed url: http://localhost:5000/?limit=1000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
+    speckle_url = ""
+
+    if request is not None:
+        url = request.url.split("?")[-1]
+        if "projects" in url and "models" in url:
+            speckle_url = url
+
+    speckle_collection_pts = copy.deepcopy(CONFIG["resources"]["speckle"])
+    speckle_collection_lines = copy.deepcopy(CONFIG["resources"]["speckle"])
+    speckle_collection_polygons = copy.deepcopy(CONFIG["resources"]["speckle"])
+
+    speckle_collection_pts["title"]["en"] = "Some Points"
+    speckle_collection_lines["title"]["en"] = "Some Lines"
+    speckle_collection_polygons["title"]["en"] = "Some Polygons"
+
+    # assign speckle url and get the data
+    if speckle_url != "":
+        speckle_collection_pts["providers"][0]["data"] = speckle_url
+        speckle_collection_lines["providers"][0]["data"] = speckle_url
+        speckle_collection_polygons["providers"][0]["data"] = speckle_url
+
+    CONFIG["resources"] = {
+        "speckle_points": speckle_collection_pts,
+        "speckle_lines": speckle_collection_lines,
+        "speckle_polygons": speckle_collection_polygons,
+    }
 
     return CONFIG
 
