@@ -125,6 +125,7 @@ def get_collection_queryables(api: API, request: Union[APIRequest, Any],
         LOGGER.debug('Loading feature provider')
         p = load_plugin('provider', get_provider_by_type(
             api.config['resources'][dataset]['providers'], 'feature'))
+        p._load()
     except ProviderTypeError:
         try:
             LOGGER.debug('Loading coverage provider')

@@ -132,6 +132,9 @@ class SpeckleProvider(BaseProvider):
         fields = {}
         LOGGER.debug("Treating all columns as string types")
 
+        if self.speckle_data is None:
+            self._load()
+            
         # check if the object was extracted
         if isinstance(self.speckle_data, Dict):
             if len(self.speckle_data["features"]) == 0:
@@ -353,7 +356,12 @@ class SpeckleProvider(BaseProvider):
             raise SpeckleException("Transport not found")
 
         # data transfer
-        commit_obj = operations.receive(objId, transport, None)
+        try:
+            commit_obj = operations.receive(objId, transport, None)
+        except SpeckleException as ex:
+            # e.g. SpeckleException: Can't get object b53a53697a/f8ce82b242e05eeaab4c6c59fb25e4a0: HTTP error 404 ()
+            raise SpeckleException("Fetching data failed, Project might be set to Private.")
+
         client.commit.received(
             wrapper.stream_id,
             commit["id"],
