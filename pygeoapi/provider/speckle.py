@@ -326,28 +326,27 @@ class SpeckleProvider(BaseProvider):
         from specklepy.logging.exceptions import SpeckleException
         from specklepy.core.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
+        from specklepy.core.api.client import SpeckleClient
 
-        wrapper: StreamWrapper = StreamWrapper(
-            self.url.lower().split("speckleurl=")[-1].split("&")[0]
+        url: str = self.url.lower().split("speckleurl=")[-1].split("&")[0]
+        
+        # get URL that will not trigget Client init
+        url_fe1: str = url.replace("projects", "streams").split("models")[0]
+        wrapper: StreamWrapper = StreamWrapper(url_fe1)
+
+        # set actual branch
+        wrapper.model_id = url.split("models/")[1].split("/")[0].split("&")[0].split("@")[0].split("?")[0]
+        
+        # get client by URL, no authentication
+        client = SpeckleClient(host=wrapper.host, use_ssl=wrapper.host.startswith("https"))
+
+        # get branch data
+        branch = client.branch.get(
+            stream_id =wrapper.stream_id, name=wrapper.model_id
         )
-        client, stream = self.tryGetClient(wrapper)
-        stream = self.validateStream(stream)
-        branchName = wrapper.branch_name
-        if branchName is None:
-            branchName = "main"
 
-        if wrapper.commit_id == None:
-            stream = client.stream.get(
-                id=stream["id"], branch_limit=100, commit_limit=100
-            )
-
-        branch = self.validateBranch(stream, branchName)
-        commitId = wrapper.commit_id
-        commit = self.validateCommit(branch, commitId)
+        commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]
-
-        if branch["name"] is None or commit["id"] is None or objId is None:
-            raise SpeckleException("Something went wrong")
 
         transport = self.validateTransport(client, wrapper.stream_id)
         if transport == None:
@@ -361,7 +360,7 @@ class SpeckleProvider(BaseProvider):
             source_application="pygeoapi",
             message="Received commit in pygeoapi",
         )
-        print(f"Rendering project '{stream['name']}'")
+        print(f"Rendering model '{branch['name']}'")
         return self.traverse_data(commit_obj)
 
     def traverse_data(self, commit_obj):
@@ -682,102 +681,25 @@ class SpeckleProvider(BaseProvider):
             else:
                 props[prop_name] = value
 
-    def tryGetClient(
+    def tryGetStream(
         self,
         sw: "StreamWrapper",
-    ) -> Tuple[Union["SpeckleClient", None], Union["Stream", None]]:
+        client: "SpeckleClient"
+    ) -> Union["Stream", None]:
 
-        from specklepy.core.api.credentials import (
-            get_local_accounts,
-        )
         from specklepy.logging.exceptions import SpeckleException
         from specklepy.core.api.client import SpeckleClient
         from specklepy.core.api.models import Stream
 
-        # only streams with write access
-        client = None
-        for acc in get_local_accounts():
-            # only check accounts on selected server
-            if acc.serverInfo.url in sw.server_url:
-                client = SpeckleClient(
-                    acc.serverInfo.url, acc.serverInfo.url.startswith("https")
-                )
-                client.authenticate_with_account(acc)
-                if client.account.token is not None:
-                    break
-
-        # if token still not found
-        if client is None or client.account.token is None:
-            client = sw.get_client()
-
-        if client is not None:
-            stream = client.stream.get(
-                id=sw.stream_id, branch_limit=100, commit_limit=100
-            )
-            if isinstance(stream, Stream) or isinstance(stream, Dict):
-                # try get stream, only read access needed
-                return client, stream
-            else:
-                raise SpeckleException(f"Fetching Speckle Project failed: {stream}")
+        stream = client.stream.get(
+            id=sw.stream_id, branch_limit=100, commit_limit=100
+        )
+        if isinstance(stream, Stream) or isinstance(stream, Dict):
+            # try get stream, only read access needed
+            return stream
         else:
-            raise SpeckleException("SpeckleClient creation failed")
+            raise SpeckleException(f"Fetching Speckle Project failed: {stream}. Project might be private.")
 
-    def validateStream(self, stream: "Stream") -> Union["Stream", None]:
-
-        from specklepy.logging.exceptions import SpeckleException
-
-        if isinstance(stream, SpeckleException):
-            raise stream
-        if stream["branches"] is None:
-            raise SpeckleException("Stream has no branches")
-        return stream
-
-    def validateBranch(
-        self, stream: "Stream", branchName: str
-    ) -> Union["Branch", None]:
-
-        from specklepy.logging.exceptions import SpeckleException
-
-        branch = None
-        if not stream["branches"] or not stream["branches"]["items"]:
-            return None
-        for b in stream["branches"]["items"]:
-            if b["name"] == branchName:
-                branch = b
-                break
-        if branch is None:
-            raise SpeckleException("Failed to find a branch")
-        if branch["commits"] is None:
-            raise SpeckleException("Failed to find a branch")
-        if len(branch["commits"]["items"]) == 0:
-            raise SpeckleException("Branch contains no commits")
-        return branch
-
-    def validateCommit(self, branch: "Branch", commitId: str) -> Union["Commit", None]:
-
-        from specklepy.logging.exceptions import SpeckleException
-
-        commit = None
-        try:
-            commitId = commitId.split(" | ")[0]
-        except:
-            if len(branch["commits"]["items"]) > 0:
-                commit = branch["commits"]["items"][0]
-            else:
-                raise SpeckleException("Commit ID is not valid")
-
-        else:
-            for i in branch["commits"]["items"]:
-                if i["id"] == commitId:
-                    commit = i
-                    break
-            if commit is None:
-                try:
-                    commit = branch["commits"]["items"][0]
-                    print("Failed to find a commit. Receiving Latest")
-                except:
-                    raise SpeckleException("Failed to find a commit")
-        return commit
 
     def validateTransport(
         self, client: "SpeckleClient", streamId: str
