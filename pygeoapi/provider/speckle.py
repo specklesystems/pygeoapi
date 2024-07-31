@@ -453,8 +453,8 @@ class SpeckleProvider(BaseProvider):
                 self.assign_props(f_base, feature["properties"])
 
                 # sort by type here:
-                if feature["geometry"]["type"] == "MultiPolygon":
-                    data["features"].append(feature)
+                # if feature["geometry"]["type"] == "MultiPolygon":
+                data["features"].append(feature)
 
         return data
 
@@ -660,53 +660,66 @@ class SpeckleProvider(BaseProvider):
     def assign_props(self, obj, props):
         from specklepy.objects.geometry import Base
 
+        all_prop_names = obj.get_member_names()
+
+        # check if GIS object
+        if "attributes" in all_prop_names and isinstance(obj["attributes"], Base):
+            all_prop_names = obj["attributes"].get_member_names()
+
+            for prop_name in all_prop_names:
+                props["speckle_type"] = obj.speckle_type
+
+                value = getattr(obj["attributes"], prop_name)
+                if prop_name == "applicationId":
+                    props["id"] = value
+                elif (prop_name
+                    in [
+                        "geometry",
+                        "totalChildrenCount",
+                        "units",
+                    ]
+                ):
+                    pass
+                else:
+                    if (
+                    isinstance(value, Base)
+                    or isinstance(value, List)
+                    or isinstance(value, Dict)
+                    ):
+                        props[prop_name] = str(value)
+                    else:
+                        props[prop_name] = value
+            return 
+        
+        # if not GIS: 
         for prop_name in obj.get_member_names():
-            value = getattr(obj, prop_name)
             if (
                 prop_name
                 in [
                     "geometry",
-                    "units",
                     "totalChildrenCount",
                     "vertices",
                     "faces",
+                    "colors",
+                    "bbox",
                     "displayValue",
                     "displayStyle",
                     "textureCoordinates",
                     "renderMaterial",
+                    "applicationId",
                 ]
-                # or prop_name.lower() == "id"
             ):
                 pass
-            elif isinstance(value, Base) and prop_name == "attributes":
-                self.assign_props(value, props)
-            elif (
-                isinstance(value, Base)
-                or isinstance(value, List)
-                or isinstance(value, Dict)
-            ):
-                props[prop_name] = str(value)
             else:
-                props[prop_name] = value
-
-    def tryGetStream(
-        self,
-        sw: "StreamWrapper",
-        client: "SpeckleClient"
-    ) -> Union["Stream", None]:
-
-        from specklepy.logging.exceptions import SpeckleException
-        from specklepy.core.api.client import SpeckleClient
-        from specklepy.core.api.models import Stream
-
-        stream = client.stream.get(
-            id=sw.stream_id, branch_limit=100, commit_limit=100
-        )
-        if isinstance(stream, Stream) or isinstance(stream, Dict):
-            # try get stream, only read access needed
-            return stream
-        else:
-            raise SpeckleException(f"Fetching Speckle Project failed: {stream}. Project might be private.")
+                value = getattr(obj, prop_name)
+                if (
+                    isinstance(value, Base)
+                    or isinstance(value, List)
+                    or isinstance(value, Dict)
+                ):
+                    props[prop_name] = str(value)
+                else:
+                    props[prop_name] = value
 
 
     def validateTransport(
