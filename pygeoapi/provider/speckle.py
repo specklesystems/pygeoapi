@@ -109,14 +109,19 @@ class SpeckleProvider(BaseProvider):
                 raise Exception(m)
 
         # TODO: replace 1 line in specklepy
+        
+        # assign global values
+        self.url = self.data # to store the value and check if self.data has changed
 
         self.speckle_data = None
-        self.url = self.data
-        print(self.url)
+
         self.crs = None
+        self.crs_dict = None
+
         self.lat = 51.52486388756923
         self.lon = 0.1621445437168942
         self.north_degrees = 0
+
 
     def get_fields(self):
         """
@@ -194,20 +199,18 @@ class SpeckleProvider(BaseProvider):
             self.speckle_data = self.load_speckle_data()
             self.fields = self.get_fields()
 
-        data = self.speckle_data
-
         # filter by properties if set
         if properties:
-            data["features"] = [
+            self.speckle_data["features"] = [
                 f
-                for f in data["features"]
+                for f in self.speckle_data["features"]
                 if all([str(f["properties"][p[0]]) == str(p[1]) for p in properties])
             ]  # noqa
 
         # All features must have ids, TODO must be unique strings
-        if isinstance(data, str):
-            raise Exception(data)
-        for i in data["features"]:
+        if isinstance(self.speckle_data, str):
+            raise Exception(self.speckle_data)
+        for i in self.speckle_data["features"]:
             # for some reason dictionary is changed to list of links
             try:
                 i["properties"]
@@ -225,7 +228,8 @@ class SpeckleProvider(BaseProvider):
                     for k, v in i["properties"].items()
                     if k in set(self.properties) | set(select_properties)
                 }  # noqa
-        return data
+
+        return self.speckle_data
 
     @crs_transform
     def query(
@@ -297,18 +301,7 @@ class SpeckleProvider(BaseProvider):
         :param new_feature: new GeoJSON feature dictionary
         """
 
-        all_data = self._load()
-
-        if (
-            self.id_field not in new_feature
-            and self.id_field not in new_feature["properties"]
-        ):
-            new_feature["properties"][self.id_field] = str(uuid.uuid4())
-
-        all_data["features"].append(new_feature)
-
-        with open(self.data, "w") as dst:
-            dst.write(json.dumps(all_data))
+        raise NotImplementedError("Creating features is not supported")
 
     def update(self, identifier, new_feature):
         """Updates an existing feature id with new_feature
@@ -316,34 +309,14 @@ class SpeckleProvider(BaseProvider):
         :param new_feature: new GeoJSON feature dictionary
         """
 
-        all_data = self._load()
-        for i, feature in enumerate(all_data["features"]):
-            if self.id_field in feature:
-                if feature[self.id_field] == identifier:
-                    new_feature["properties"][self.id_field] = identifier
-                    all_data["features"][i] = new_feature
-            elif self.id_field in feature["properties"]:
-                if feature["properties"][self.id_field] == identifier:
-                    new_feature["properties"][self.id_field] = identifier
-                    all_data["features"][i] = new_feature
-        with open(self.data, "w") as dst:
-            dst.write(json.dumps(all_data))
+        raise NotImplementedError("Updating features is not supported")
 
     def delete(self, identifier):
         """Deletes an existing feature
         :param identifier: feature id
         """
 
-        all_data = self._load()
-        for i, feature in enumerate(all_data["features"]):
-            if self.id_field in feature:
-                if feature[self.id_field] == identifier:
-                    all_data["features"].pop(i)
-            elif self.id_field in feature["properties"]:
-                if feature["properties"][self.id_field] == identifier:
-                    all_data["features"].pop(i)
-        with open(self.data, "w") as dst:
-            dst.write(json.dumps(all_data))
+        raise NotImplementedError("Deleting features is not supported")
 
     def __repr__(self):
         return f"<SpeckleProvider> {self.data}"
