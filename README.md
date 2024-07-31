@@ -43,7 +43,7 @@ pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 pygeoapi serve
 ```
 Example URL:
-http://localhost:5000/?limit=10000&speckleURL=https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149
+http://localhost:5000/?limit=10000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149
 
 If GIS-originated Speckle model is loaded, no additional arguments are needed, except SPECKLEURL and LIMIT. 
 

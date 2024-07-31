@@ -111,16 +111,16 @@ class SpeckleProvider(BaseProvider):
         # TODO: replace 1 line in specklepy
         
         # assign global values
-        self.url = self.data # to store the value and check if self.data has changed
+        self.url: str = self.data # to store the value and check if self.data has changed
 
         self.speckle_data = None
 
         self.crs = None
         self.crs_dict = None
 
-        self.lat = 51.52486388756923
-        self.lon = 0.1621445437168942
-        self.north_degrees = 0
+        self.lat: float = 51.52486388756923
+        self.lon: float = 0.1621445437168942
+        self.north_degrees: float = 0
 
 
     def get_fields(self):
@@ -158,22 +158,22 @@ class SpeckleProvider(BaseProvider):
 
         if (
             isinstance(self.data, str)
-            and "speckleUrl=" in self.data
+            and "speckleurl=" in self.data.lower()
             and "projects" in self.data
             and "models" in self.data
         ):
             crs_authid = ""
-            for item in self.data.split("&"):
+            for item in self.data.lower().split("&"):
 
                 # if CRS authid is found, rest will be ignored
-                if "crsAuthid=" in item:
-                    crs_authid = item.split("crsAuthid=")[1]
+                if "crsauthid=" in item:
+                    crs_authid = item.split("crsauthid=")[1]
                 elif "lat=" in item:
                     self.lat = float(item.split("lat=")[1])
                 elif "lon=" in item:
                     self.lon = float(item.split("lon=")[1])
-                elif "northDegrees=" in item:
-                    self.north_degrees = float(item.split("northDegrees=")[1])
+                elif "northdegrees=" in item:
+                    self.north_degrees = float(item.split("northdegrees=")[1])
 
             # if CRS assigned, create one:
             if len(crs_authid)>3:
@@ -328,7 +328,7 @@ class SpeckleProvider(BaseProvider):
         from specklepy.core.api.wrapper import StreamWrapper
 
         wrapper: StreamWrapper = StreamWrapper(
-            self.url.split("speckleUrl=")[-1].split("&")[0]
+            self.url.lower().split("speckleurl=")[-1].split("&")[0]
         )
         client, stream = self.tryGetClient(wrapper)
         stream = self.validateStream(stream)
