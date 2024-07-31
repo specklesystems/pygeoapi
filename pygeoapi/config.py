@@ -42,6 +42,7 @@ from flask import Request
 from pygeoapi.util import to_json, yaml_load, THISDIR
 
 LOGGER = logging.getLogger(__name__)
+CONFIG = {}
 
 
 def get_config(raw: bool = False, request: Request = None) -> dict:
@@ -53,53 +54,54 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
     :returns: `dict` of pygeoapi configuration
     """
 
+    # passed url: http://localhost:5000/?limit=1000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
+
     if not os.environ.get("PYGEOAPI_CONFIG"):
         raise RuntimeError("PYGEOAPI_CONFIG environment variable not set")
+
+    global CONFIG
+    print(CONFIG)
 
     config_file = os.environ.get("PYGEOAPI_CONFIG")
     with open(config_file, encoding="utf8") as fh:
         if raw:
-            CONFIG = yaml.safe_load(fh)
+            config_yaml = yaml.safe_load(fh)
         else:
-            CONFIG = yaml_load(fh)
+            config_yaml = yaml_load(fh)
 
-    # passed url: http://localhost:5000/?limit=1000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
-    speckle_collection_pts = copy.deepcopy(CONFIG["resources"]["speckle"])
-    speckle_collection_lines = copy.deepcopy(CONFIG["resources"]["speckle"])
-    speckle_collection_polygons = copy.deepcopy(CONFIG["resources"]["speckle"])
+    # assign valid dictionnaries to Speckle resources
+    speckle_collection_pts = copy.deepcopy(config_yaml["resources"]["speckle"])
+    speckle_collection_lines = copy.deepcopy(config_yaml["resources"]["speckle"])
+    speckle_collection_polygons = copy.deepcopy(config_yaml["resources"]["speckle"])
 
+    # for the first time only: assign YAML value to CONFIG. Otherwise, don't modify
+    if CONFIG == {}:
+        CONFIG = config_yaml
+
+    url_valid = False
     speckle_url = ""
     if request is not None:
         url = request.url.split("?")[-1]
         if "projects" in url and "models" in url:
+            url_valid = True
             speckle_url = url
 
-            speckle_collection_pts["title"]["en"] = "Some Points"
-            speckle_collection_lines["title"]["en"] = "Some Lines"
-            speckle_collection_polygons["title"]["en"] = "Some Polygons"
+    # once Speckle URL is found, set it as a provider
+    if url_valid:
+        speckle_collection_pts["title"]["en"] = "Some Points"
+        speckle_collection_lines["title"]["en"] = "Some Lines"
+        speckle_collection_polygons["title"]["en"] = "Some Polygons"
 
-            # assign speckle url and get the data
-            speckle_collection_pts["providers"][0]["data"] = speckle_url
-            speckle_collection_lines["providers"][0]["data"] = speckle_url
-            speckle_collection_polygons["providers"][0]["data"] = speckle_url
+        # assign speckle url and get the data
+        speckle_collection_pts["providers"][0]["data"] = speckle_url
+        speckle_collection_lines["providers"][0]["data"] = speckle_url
+        speckle_collection_polygons["providers"][0]["data"] = speckle_url
 
-            CONFIG["resources"] = {
-                "speckle": speckle_collection_pts,
-                "speckle_lines": speckle_collection_lines,
-                "speckle_polygons": speckle_collection_polygons,
-            }
-
-            # overwrite YAML
-            with open(config_file, "r") as file:
-                lines = file.readlines()
-                new_lines = []
-                for i, line in enumerate(lines):
-                    if "data: " in line and "/projects/" in line and "/models/" in line:
-                        line = f'{line.split("data: ",1)[0]}data: {speckle_url}\n'
-                    new_lines.append(line)
-            with open(config_file, "w") as file:
-                file.writelines(new_lines)
-            file.close()
+        CONFIG["resources"] = {
+            "speckle": speckle_collection_pts,
+            "speckle_lines": speckle_collection_lines,
+            "speckle_polygons": speckle_collection_polygons,
+        }
 
     return CONFIG
 

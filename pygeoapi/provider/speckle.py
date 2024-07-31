@@ -73,9 +73,10 @@ class SpeckleProvider(BaseProvider):
         super().__init__(provider_def)
 
         if self.data is None:
-            raise ValueError(
-                "Please provide Speckle project link as an argument, e.g.: 'http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149'"
-            )
+            self.data = ""
+            # raise ValueError(
+            #    "Please provide Speckle project link as an argument, e.g.: 'http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149'"
+            # )
 
         from subprocess import run
 
@@ -142,6 +143,11 @@ class SpeckleProvider(BaseProvider):
 
     def _load(self, skip_geometry=None, properties=[], select_properties=[]):
         """Validate Speckle data"""
+
+        if self.data == "":
+            raise ValueError(
+                "Please provide Speckle project link as an argument, e.g.: http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149"
+            )
 
         if (
             isinstance(self.data, str)
