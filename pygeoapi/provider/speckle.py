@@ -113,6 +113,7 @@ class SpeckleProvider(BaseProvider):
         self.speckle_data = None
         self.url = self.data
         print(self.url)
+        self.crs = None
         self.lat = 51.52486388756923
         self.lon = 0.1621445437168942
         self.north_degrees = 0
@@ -147,18 +148,21 @@ class SpeckleProvider(BaseProvider):
 
         if self.data == "":
             raise ValueError(
-                "Please provide Speckle project link as an argument, e.g.: http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149"
+                "Please provide Speckle project link as an argument, e.g.: http://localhost:5000/?limit=100000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149"
             )
 
         if (
             isinstance(self.data, str)
+            and "speckleUrl=" in self.data
             and "projects" in self.data
             and "models" in self.data
         ):
-            request_str = self.data
-            for item in request_str.split("&"):
-                if "https://" in item:
-                    self.url = item
+            crs_authid = ""
+            for item in self.data.split("&"):
+
+                # if CRS authid is found, rest will be ignored
+                if "crsAuthid=" in item:
+                    crs_authid = item.split("crsAuthid=")[1]
                 elif "lat=" in item:
                     self.lat = float(item.split("lat=")[1])
                 elif "lon=" in item:
@@ -166,14 +170,16 @@ class SpeckleProvider(BaseProvider):
                 elif "northDegrees=" in item:
                     self.north_degrees = float(item.split("northDegrees=")[1])
 
-        # check if it's a new request (self.data was updated)
-        new_request = True
+            # if CRS assigned, create one:
+            if len(crs_authid)>3:
+                self.create_crs_from_authid()
+
+        # check if it's a new request (self.data was updated and doesn't match self.url)
+        new_request = False
         if self.url != self.data:
-            new_request = False
-        print(new_request)
-        print(self.data)
-        print(self.url)
-        print(self.speckle_data)
+            new_request = True
+            self.url = self.data
+
         # check if self.data was updated OR if features were not created yet
         if (
             new_request is True
@@ -349,7 +355,7 @@ class SpeckleProvider(BaseProvider):
         from specklepy.core.api.wrapper import StreamWrapper
 
         wrapper: StreamWrapper = StreamWrapper(
-            self.url.split("speckleURL=")[-1].split("&")[0]
+            self.url.split("speckleUrl=")[-1].split("&")[0]
         )
         client, stream = self.tryGetClient(wrapper)
         stream = self.validateStream(stream)
@@ -400,7 +406,7 @@ class SpeckleProvider(BaseProvider):
             "type": "FeatureCollection",
             "features": [],
         }
-        self.assign_crs(data)
+        self.assign_crs_to_geojson(data)
 
         rule = TraversalRule(
             [lambda _: True],
@@ -413,7 +419,7 @@ class SpeckleProvider(BaseProvider):
         )
         context_list = [x for x in GraphTraversal([rule]).traverse(commit_obj)]
 
-        # iterate to get CRS
+        # iterate Speckle objects to get "crs" property
         crs = None
         displayUnits = None
         for item in context_list:
@@ -424,20 +430,15 @@ class SpeckleProvider(BaseProvider):
             ):
                 crs = item.current["crs"]
                 displayUnits = crs["units_native"]
+                self.create_crs_from_wkt(crs["wkt"])
                 break
             elif displayUnits is None and type(item.current) in supported_types:
                 displayUnits = item.current.units
 
-        # if crs not found, generate one
-        if crs is None:
-            wkt = f'PROJCS["SpeckleCRS_latlon_{self.lat}_{self.lon}", GEOGCS["GCS_WGS_1984", DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]], PRIMEM["Greenwich", 0.0], UNIT["Degree", 0.0174532925199433]], PROJECTION["Transverse_Mercator"], PARAMETER["False_Easting", 0.0], PARAMETER["False_Northing", 0.0], PARAMETER["Central_Meridian", {self.lon}], PARAMETER["Scale_Factor", 1.0], PARAMETER["Latitude_Of_Origin", {self.lat}], UNIT["Meter", 1.0]]'
-            crs = {
-                "wkt": wkt,
-                "offset_x": 0,
-                "offset_y": 0,
-                "rotation": self.north_degrees,
-                "units_native": displayUnits,
-            }
+        if self.crs is None:
+            self.create_crs_default()
+
+        self.create_crs_dict(displayUnits)
 
         # iterate to get features
         list_len = len(context_list)
@@ -447,8 +448,7 @@ class SpeckleProvider(BaseProvider):
 
         for i, item in enumerate(context_list):
             new_load = round(i / list_len * 10, 1) * 10
-            # if new_load >= 10:
-            #    break
+
             if new_load % 10 == 0 and new_load != load:
                 load = round(i / list_len * 100)
                 print(f"{load}% loaded")
@@ -468,7 +468,7 @@ class SpeckleProvider(BaseProvider):
             }
 
             # feature geometry
-            self.assign_geometry(crs, feature, f_base)
+            self.assign_geometry(feature, f_base)
             if feature["geometry"] != {}:
                 self.assign_props(f_base, feature["properties"])
 
@@ -478,7 +478,39 @@ class SpeckleProvider(BaseProvider):
 
         return data
 
-    def assign_geometry(self, crs, feature: Dict, f_base):
+    def create_crs_from_wkt(self, wkt: str | None):
+
+        from pyproj import CRS
+        self.crs = CRS.from_user_input(wkt)
+
+    def create_crs_from_authid(self, authid: str | None):
+
+        from pyproj import CRS
+
+        crs_obj = CRS.from_string(authid)
+        self.crs = crs_obj
+
+    def create_crs_default(self):
+
+        from pyproj import CRS
+
+        wkt = f'PROJCS["SpeckleCRS_latlon_{self.lat}_{self.lon}", GEOGCS["GCS_WGS_1984", DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]], PRIMEM["Greenwich", 0.0], UNIT["Degree", 0.0174532925199433]], PROJECTION["Transverse_Mercator"], PARAMETER["False_Easting", 0.0], PARAMETER["False_Northing", 0.0], PARAMETER["Central_Meridian", {self.lon}], PARAMETER["Scale_Factor", 1.0], PARAMETER["Latitude_Of_Origin", {self.lat}], UNIT["Meter", 1.0]]'
+        crs_obj = CRS.from_user_input(wkt)
+        self.crs = crs_obj
+
+    def create_crs_dict(self, displayUnits: str | None):
+        if self.crs is not None:
+            self.crs_dict = {
+                "wkt": self.crs.to_wkt(),
+                "offset_x": 0,
+                "offset_y": 0,
+                "rotation": self.north_degrees,
+                "units_native": displayUnits,
+                "obj": self.crs,
+            }
+
+
+    def assign_geometry(self, feature: Dict, f_base):
 
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
         from specklepy.objects.GIS.geometry import GisPolygonElement
@@ -488,7 +520,7 @@ class SpeckleProvider(BaseProvider):
         if isinstance(f_base, Point):
             geometry["type"] = "Point"
             geometry["coordinates"] = self.reproject_2d_coords_list(
-                crs, [[f_base.x, f_base.y]]
+                [[f_base.x, f_base.y]]
             )[0]
 
         elif isinstance(f_base, Mesh) or isinstance(f_base, Brep):
@@ -541,7 +573,7 @@ class SpeckleProvider(BaseProvider):
                 count += pt_count + 1
 
             flat_boundaries_list_reprojected = self.reproject_2d_coords_list(
-                crs, flat_boundaries_list
+                flat_boundaries_list
             )
             for i, face_c in enumerate(all_face_counts):
                 geometry["coordinates"][i] = [flat_boundaries_list_reprojected[:face_c]]
@@ -558,14 +590,14 @@ class SpeckleProvider(BaseProvider):
                 boundary = []
                 for pt in polygon.boundary.as_points():
                     boundary.append([pt.x, pt.y])
-                boundary = self.reproject_2d_coords_list(crs, boundary)
+                boundary = self.reproject_2d_coords_list(boundary)
                 new_poly.append(boundary)
 
                 for void in polygon.voids:
                     new_void = []
                     for pt_void in void.as_points():
                         new_void.append([pt_void.x, pt_void.y])
-                    new_void = self.reproject_2d_coords_list(crs, new_void)
+                    new_void = self.reproject_2d_coords_list(new_void)
                     new_poly.append(new_void)
                 geometry["coordinates"].append(new_poly)
 
@@ -575,7 +607,7 @@ class SpeckleProvider(BaseProvider):
             end = [f_base.end.x, f_base.end.y]
             geometry["coordinates"] = [start, end]
             geometry["coordinates"] = self.reproject_2d_coords_list(
-                crs, geometry["coordinates"]
+                geometry["coordinates"]
             )
 
         elif isinstance(f_base, Polyline):
@@ -584,7 +616,7 @@ class SpeckleProvider(BaseProvider):
             for pt in f_base.as_points():
                 geometry["coordinates"].append([pt.x, pt.y])
             geometry["coordinates"] = self.reproject_2d_coords_list(
-                crs, geometry["coordinates"]
+                geometry["coordinates"]
             )
         elif isinstance(f_base, Curve):
             geometry["type"] = "LineString"
@@ -592,49 +624,49 @@ class SpeckleProvider(BaseProvider):
             for pt in f_base.displayValue.as_points():
                 geometry["coordinates"].append([pt.x, pt.y])
             geometry["coordinates"] = self.reproject_2d_coords_list(
-                crs, geometry["coordinates"]
+                geometry["coordinates"]
             )
         else:
             geometry = {}
             # print(f"Unsupported geometry type: {f_base.speckle_type}")
 
-    def reproject_2d_coords_list(self, crs, coords_in: List[list]):
+    def reproject_2d_coords_list(self, coords_in: List[list]):
 
         from pyproj import Transformer
         from pyproj import CRS
 
-        coords_offset = self.offset_rotate(crs, copy.deepcopy(coords_in))
+        coords_offset = self.offset_rotate(copy.deepcopy(coords_in))
 
         transformer = Transformer.from_crs(
-            CRS.from_user_input(crs["wkt"]),
+            self.crs,
             CRS.from_user_input(4326),
             always_xy=True,
         )
         return [[pt[0], pt[1]] for pt in transformer.itransform(coords_offset)]
 
-    def offset_rotate(self, crs, coords_in: List[list]):
+    def offset_rotate(self, coords_in: List[list]):
 
         from specklepy.objects.units import get_scale_factor_from_string
 
         scale_factor = 1
-        if isinstance(crs["units_native"], str):
-            scale_factor = get_scale_factor_from_string(crs["units_native"], "m")
+        if isinstance(self.crs_dict["units_native"], str):
+            scale_factor = get_scale_factor_from_string(self.crs_dict["units_native"], "m")
 
         final_coords = []
         for coord in coords_in:
-            a = crs["rotation"] * math.pi / 180
+            a = self.crs_dict["rotation"] * math.pi / 180
             x2 = coord[0] * math.cos(a) - coord[1] * math.sin(a)
             y2 = coord[0] * math.sin(a) + coord[1] * math.cos(a)
             final_coords.append(
                 [
-                    scale_factor * (x2 + crs["offset_x"]),
-                    scale_factor * (y2 + crs["offset_y"]),
+                    scale_factor * (x2 + self.crs_dict["offset_x"]),
+                    scale_factor * (y2 + self.crs_dict["offset_y"]),
                 ]
             )
 
         return final_coords
 
-    def assign_crs(self, data: Dict):
+    def assign_crs_to_geojson(self, data: Dict):
 
         crs = {
             "crs": {
@@ -643,14 +675,6 @@ class SpeckleProvider(BaseProvider):
             }
         }
 
-        r"""
-        crs = {
-            "crs": {
-                "type": "link",
-                "properties": {"href": "wkt.txt", "type": "ogcwkt"},
-            }
-        }
-        """
         data["crs"] = crs
 
     def assign_props(self, obj, props):

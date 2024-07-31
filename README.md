@@ -42,3 +42,16 @@ set PYGEOAPI_OPENAPI=example-config.yml
 pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 pygeoapi serve
 ```
+Example URL:
+http://localhost:5000/?limit=10000&speckleURL=https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149
+
+If GIS-originated Speckle model is loaded, no additional arguments are needed, except SPECKLEURL and LIMIT. 
+
+Supported arguments:
+ - speckleUrl (text) - required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149'
+ - limit (positive integer), recommended, as some applications might apply their custom feature limit
+ - crsAuthid (text), an authority string e.g. 'epsg:4326'. If set, LAT, LON and NORTHDEGREES arguments will be ignored.
+ - lat (number), in range -90 to 90
+ - lon (number), in range -180 to 180
+ - northDegrees (number), in range -180 to 180
+
