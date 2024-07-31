@@ -111,7 +111,8 @@ class SpeckleProvider(BaseProvider):
         # TODO: replace 1 line in specklepy
 
         self.speckle_data = None
-        self.url = self.data.split("&")[0]
+        self.url = self.data
+        print(self.url)
         self.lat = 51.52486388756923
         self.lon = 0.1621445437168942
         self.north_degrees = 0
@@ -154,7 +155,7 @@ class SpeckleProvider(BaseProvider):
             and "projects" in self.data
             and "models" in self.data
         ):
-            request_str = self.data.split("?")[-1]
+            request_str = self.data
             for item in request_str.split("&"):
                 if "https://" in item:
                     self.url = item
@@ -167,26 +168,12 @@ class SpeckleProvider(BaseProvider):
 
         # check if it's a new request (self.data was updated)
         new_request = True
-        new_url = ""
-        new_lat = new_lon = new_north = 0
-
-        for item in self.data.split("&"):
-            if "https://" in item:
-                new_url = item
-            elif "lat=" in item:
-                new_lat = float(item.split("lat=")[1])
-            elif "lon=" in item:
-                new_lon = float(item.split("lon=")[1])
-            elif "northDegrees=" in item:
-                new_north = float(item.split("northDegrees=")[1])
-        if (
-            new_url == self.url
-            and new_lat == self.lat
-            and new_lon == self.lon
-            and new_north == self.north_degrees
-        ):
+        if self.url != self.data:
             new_request = False
-
+        print(new_request)
+        print(self.data)
+        print(self.url)
+        print(self.speckle_data)
         # check if self.data was updated OR if features were not created yet
         if (
             new_request is True
@@ -361,7 +348,9 @@ class SpeckleProvider(BaseProvider):
         from specklepy.core.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
 
-        wrapper: StreamWrapper = StreamWrapper(self.url.split("&")[0])
+        wrapper: StreamWrapper = StreamWrapper(
+            self.url.split("speckleURL=")[-1].split("&")[0]
+        )
         client, stream = self.tryGetClient(wrapper)
         stream = self.validateStream(stream)
         branchName = wrapper.branch_name

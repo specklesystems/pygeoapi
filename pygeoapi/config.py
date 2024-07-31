@@ -60,7 +60,6 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
         raise RuntimeError("PYGEOAPI_CONFIG environment variable not set")
 
     global CONFIG
-    print(CONFIG)
 
     config_file = os.environ.get("PYGEOAPI_CONFIG")
     with open(config_file, encoding="utf8") as fh:
