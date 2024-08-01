@@ -426,6 +426,10 @@ class SpeckleProvider(BaseProvider):
         load = 0
         print(f"{load}% loaded")
 
+        # get coordinates in bulk
+        all_coords = []
+        all_coord_counts = []
+
         for i, item in enumerate(context_list):
             new_load = round(i / list_len * 10, 1) * 10
 
@@ -448,15 +452,74 @@ class SpeckleProvider(BaseProvider):
             }
 
             # feature geometry
-            self.assign_geometry(feature, f_base)
-            if feature["geometry"] != {}:
-                self.assign_props(f_base, feature["properties"])
+            coords, coord_counts = self.assign_geometry(feature, f_base)
 
-                # sort by type here:
-                # if feature["geometry"]["type"] == "MultiPolygon":
+            if len(coords)!=0:
+                all_coords.extend(coords)
+                all_coord_counts.append(coord_counts)
+
+                self.assign_props(f_base, feature["properties"])
                 data["features"].append(feature)
+        
+        self.reproject_bulk(all_coords, all_coord_counts, [f["geometry"] for f in data["features"]])
 
         return data
+    
+    def reproject_bulk(self, all_coords, all_coord_counts, geometries):
+        
+        # reproject all coords
+        print(len(all_coords))
+        flat_coords = self.reproject_2d_coords_list(
+            all_coords
+        )
+        i = 0
+        while i < len(all_coord_counts):
+            coord_count = all_coord_counts[i]
+            geometry = geometries[i]
+            k = 0
+
+            is_polygon = False
+            if None in coord_count:
+                is_polygon = True
+            
+            
+            # start writing current feature
+            feat_coords = []
+            while k < len(coord_count):
+                count = coord_count[k]
+
+                # check if start of polygon part 
+                if count is None:
+                    polygon_parts = []
+                    k+=1
+                    if k<len(coord_count):
+                        boundary_count = coord_count[k]
+                        boundary_coords = flat_coords[:boundary_count]
+                        flat_coords = flat_coords[boundary_count:]
+                        polygon_parts.append(boundary_coords)
+
+                        n = k+1
+                        while n<len(coord_count) and coord_count[n] is not None:
+                            
+                            void_count = coord_count[n]
+                            void_coords = flat_coords[:void_count]
+                            flat_coords = flat_coords[void_count:]
+                            polygon_parts.append(void_coords)
+                            n += 1
+                            k = n
+                else: 
+                    geom_coords = flat_coords[:count]
+                    flat_coords = flat_coords[count:]
+                    feat_coords.extend(geom_coords)
+
+                if is_polygon:
+                    feat_coords.append(polygon_parts)
+
+                k += 1
+
+            geometry["coordinates"] = feat_coords
+            i+=1
+
 
     def create_crs_from_wkt(self, wkt: str | None):
 
@@ -496,12 +559,17 @@ class SpeckleProvider(BaseProvider):
         from specklepy.objects.GIS.geometry import GisPolygonElement
 
         geometry = feature["geometry"]
+        coords = [] 
+        coord_counts = []
 
         if isinstance(f_base, Point):
             geometry["type"] = "Point"
-            geometry["coordinates"] = self.reproject_2d_coords_list(
-                [[f_base.x, f_base.y]]
-            )[0]
+
+            coords.append([f_base.x, f_base.y])
+            coord_counts.append(1)
+            #geometry["coordinates"] = self.reproject_2d_coords_list(
+            #    [[f_base.x, f_base.y]]
+            #)[0]
 
         elif isinstance(f_base, Mesh) or isinstance(f_base, Brep):
             faces = []
@@ -524,11 +592,11 @@ class SpeckleProvider(BaseProvider):
                     vertices = f_base.displayValue.vertices
 
             geometry["type"] = "MultiPolygon"
-            geometry["coordinates"] = []
+            #geometry["coordinates"] = []
 
             count: int = 0
-            all_face_counts = []
-            flat_boundaries_list = []
+            #all_face_counts = []
+            #flat_boundaries_list = []
             for i, pt_count in enumerate(faces):
                 if i != count:
                     continue
@@ -538,77 +606,99 @@ class SpeckleProvider(BaseProvider):
                     pt_count = 3
                 elif pt_count == 1:
                     pt_count = 4
-                all_face_counts.append(pt_count)
+                #all_face_counts.append(pt_count)
+                coord_counts.append(None)
+                coord_counts.append(pt_count)
 
-                new_poly = []
-                boundary = []
+                #new_poly = []
+                #boundary = []
 
                 for vertex_index in faces[count + 1 : count + 1 + pt_count]:
                     x = vertices[vertex_index * 3]
                     y = vertices[vertex_index * 3 + 1]
-                    flat_boundaries_list.append([x, y])
+                    #flat_boundaries_list.append([x, y])
+                    coords.append([x, y])
 
-                new_poly.append(boundary)
-                geometry["coordinates"].append(new_poly)
+                #new_poly.append(boundary)
+                #geometry["coordinates"].append(new_poly)
                 count += pt_count + 1
 
-            flat_boundaries_list_reprojected = self.reproject_2d_coords_list(
-                flat_boundaries_list
-            )
-            for i, face_c in enumerate(all_face_counts):
-                geometry["coordinates"][i] = [flat_boundaries_list_reprojected[:face_c]]
-                flat_boundaries_list_reprojected = flat_boundaries_list_reprojected[
-                    face_c:
-                ]
+            #flat_boundaries_list_reprojected = self.reproject_2d_coords_list(
+            #    flat_boundaries_list
+            #)
+            #for i, face_c in enumerate(all_face_counts):
+            #    geometry["coordinates"][i] = [flat_boundaries_list_reprojected[:face_c]]
+            #    flat_boundaries_list_reprojected = flat_boundaries_list_reprojected[
+            #        face_c:
+            #    ]
 
         elif isinstance(f_base, GisPolygonElement):
             geometry["type"] = "MultiPolygon"
-            geometry["coordinates"] = []
+            #geometry["coordinates"] = []
 
             for polygon in f_base.geometry:
-                new_poly = []
-                boundary = []
+                #new_poly = []
+                #boundary = []
+                coord_counts.append(None)
+                coord_counts.append(0)
                 for pt in polygon.boundary.as_points():
-                    boundary.append([pt.x, pt.y])
-                boundary = self.reproject_2d_coords_list(boundary)
-                new_poly.append(boundary)
+                    #boundary.append([pt.x, pt.y])
+                    coords.append([pt.x, pt.y])
+                    coord_counts[-1] += 1
+                #boundary = self.reproject_2d_coords_list(boundary)
+                #new_poly.append(boundary)
+
 
                 for void in polygon.voids:
-                    new_void = []
+                    #new_void = []
+                    coord_counts.append(0)
                     for pt_void in void.as_points():
-                        new_void.append([pt_void.x, pt_void.y])
-                    new_void = self.reproject_2d_coords_list(new_void)
-                    new_poly.append(new_void)
-                geometry["coordinates"].append(new_poly)
+                        #new_void.append([pt_void.x, pt_void.y])
+                        coords.append([pt_void.x, pt_void.y])
+                        coord_counts[-1] += 1
+                    #new_void = self.reproject_2d_coords_list(new_void)
+                    #new_poly.append(new_void)
+                #geometry["coordinates"].append(new_poly)
 
         elif isinstance(f_base, Line):
             geometry["type"] = "LineString"
             start = [f_base.start.x, f_base.start.y]
             end = [f_base.end.x, f_base.end.y]
-            geometry["coordinates"] = [start, end]
-            geometry["coordinates"] = self.reproject_2d_coords_list(
-                geometry["coordinates"]
-            )
+            
+            coords.extend([start, end])
+            coord_counts.append(2)
+            #geometry["coordinates"] = [start, end]
+            #geometry["coordinates"] = self.reproject_2d_coords_list(
+            #    geometry["coordinates"]
+            #)
 
         elif isinstance(f_base, Polyline):
             geometry["type"] = "LineString"
-            geometry["coordinates"] = []
+            #geometry["coordinates"] = []
             for pt in f_base.as_points():
-                geometry["coordinates"].append([pt.x, pt.y])
-            geometry["coordinates"] = self.reproject_2d_coords_list(
-                geometry["coordinates"]
-            )
+                #geometry["coordinates"].append([pt.x, pt.y])
+                coords.append([pt.x, pt.y])
+            coord_counts.append(len(coords))
+            #geometry["coordinates"] = self.reproject_2d_coords_list(
+            #    geometry["coordinates"]
+            #)
+
         elif isinstance(f_base, Curve):
             geometry["type"] = "LineString"
-            geometry["coordinates"] = []
+            #geometry["coordinates"] = []
             for pt in f_base.displayValue.as_points():
-                geometry["coordinates"].append([pt.x, pt.y])
-            geometry["coordinates"] = self.reproject_2d_coords_list(
-                geometry["coordinates"]
-            )
+                #geometry["coordinates"].append([pt.x, pt.y])
+                coords.append([pt.x, pt.y])
+            coord_counts.append(len(coords))
+            #geometry["coordinates"] = self.reproject_2d_coords_list(
+            #    geometry["coordinates"]
+            #)
+
         else:
             geometry = {}
             # print(f"Unsupported geometry type: {f_base.speckle_type}")
+        
+        return coords, coord_counts
 
     def reproject_2d_coords_list(self, coords_in: List[list]):
 
@@ -720,7 +810,6 @@ class SpeckleProvider(BaseProvider):
                     props[prop_name] = str(value)
                 else:
                     props[prop_name] = value
-
 
     def validateTransport(
         self, client: "SpeckleClient", streamId: str
