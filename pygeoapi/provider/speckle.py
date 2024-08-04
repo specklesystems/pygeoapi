@@ -510,7 +510,11 @@ class SpeckleProvider(BaseProvider):
         for i, geometry in enumerate(geometries):
             geometry["coordinates"] = []
             if feat_coord_group_is_multi[i] is False:
-                geometry["coordinates"].extend(feat_coord_groups[i])
+                
+                if geometry["type"] == "Point":
+                    geometry["coordinates"].extend(feat_coord_groups[i][0])
+                else:
+                    geometry["coordinates"].extend(feat_coord_groups[i])
             else:
                 polygon_parts = []
                 local_coords_count: List[List[int]] = feat_coord_group_counts[i]
@@ -702,6 +706,9 @@ class SpeckleProvider(BaseProvider):
             for pt in f_base.displayValue.as_points():
                 #geometry["coordinates"].append([pt.x, pt.y])
                 coords.append([pt.x, pt.y])
+            if len(coords)>2 and f_base.displayValue.closed is True and coords[0] != coords[-1]:
+                coords.append(coords[0])
+
             coord_counts.append([len(coords)])
             #geometry["coordinates"] = self.reproject_2d_coords_list(
             #    geometry["coordinates"]
@@ -801,6 +808,9 @@ class SpeckleProvider(BaseProvider):
             if (
                 prop_name
                 in [
+                    "x",
+                    "y",
+                    "z",
                     "geometry",
                     "speckle_type",
                     "totalChildrenCount",
@@ -808,11 +818,29 @@ class SpeckleProvider(BaseProvider):
                     "faces",
                     "colors",
                     "bbox",
+                    "value",
+                    "domain",
                     "displayValue",
                     "displayStyle",
                     "textureCoordinates",
                     "renderMaterial",
                     "applicationId",
+                    "TrimsValue",
+                    "LoopsValue",
+                    "Faces",
+                    "VerticesValue",
+                    "EdgesValue",
+                    "Curve2DValues",
+                    "Vertices",
+                    "Loops",
+                    "Curve3D",
+                    "FacesValue",
+                    "SurfacesValue",
+                    "Edges",
+                    "Surfaces",
+                    "Curve3DValues",
+                    "Trims",
+                    "Curve2D",
                 ]
             ):
                 pass
