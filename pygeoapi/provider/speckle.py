@@ -469,7 +469,6 @@ class SpeckleProvider(BaseProvider):
     def reproject_bulk(self, all_coords, all_coord_counts: List[List[None| List[int]]], geometries):
         from datetime import datetime
         # reproject all coords
-        print(len(all_coords))
         time1 = datetime.now()
         flat_coords = self.reproject_2d_coords_list(
             all_coords
@@ -479,13 +478,12 @@ class SpeckleProvider(BaseProvider):
 
         feat_coord_group_counts = [[ y for y in x if y is not None] for x in all_coord_counts]
         feat_coord_group_counts_per_part = [[ sum(y) for y in x if y is not None] for x in all_coord_counts]
-        print(feat_coord_group_counts_per_part)
+
         feat_coord_group_flat_counts: List[int] = [sum([ sum(y) for y in x if y is not None]) for x in all_coord_counts]
         
         feat_coord_group_is_polygon = [True if None in x else False for x in all_coord_counts]
         feat_coord_groups = [flat_coords[sum(feat_coord_group_flat_counts[:i]):sum(feat_coord_group_flat_counts[:i])+x] for i, x in enumerate(feat_coord_group_flat_counts)]
 
-        print("___________________________")
         for i, geometry in enumerate(geometries):
             geometry["coordinates"] = []
             if feat_coord_group_is_polygon[i] is False:
@@ -498,11 +496,13 @@ class SpeckleProvider(BaseProvider):
 
                 for c, poly_part_count_lists in enumerate(local_coords_count):
                     poly_part = []
-                    print(f"start: {sum(local_coords_count_flat[:c]) if c!=0 else 0}, end + : {sum(local_coords_count_flat[:c]) + local_coords_count_flat[c] if c!=0 else local_coords_count_flat[c]}")
-                    range_coords_indices = range(sum(local_coords_count_flat[:c]) if c!=0 else 0, sum(local_coords_count_flat[:c]) + local_coords_count_flat[c] if c!=0 else local_coords_count_flat[c])
-                    
-                    print(range_coords_indices)
-                    poly_part.append([local_flat_coords[ind] for ind in range_coords_indices])
+                    start_index = sum(local_coords_count_flat[:c]) if c!=0 else 0 # all used coords in all parts
+
+                    for part_count in poly_part_count_lists:
+                        range_coords_indices = range(start_index, start_index + part_count)
+                        poly_part.append([local_flat_coords[ind] for ind in range_coords_indices])
+
+                        start_index += part_count
                     
                     polygon_parts.append(poly_part)
 
@@ -603,7 +603,7 @@ class SpeckleProvider(BaseProvider):
                 count += pt_count + 1
 
         elif isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
-            print(f_base.geometry)
+            
             if isinstance(f_base.geometry[0], Point):
                 geometry["type"] = "MultiPoint"
                 
