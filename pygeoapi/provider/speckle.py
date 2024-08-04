@@ -482,17 +482,19 @@ class SpeckleProvider(BaseProvider):
         time2 = datetime.now()
         print((time2-time1).total_seconds())
 
+        # define type of features
+        feat_coord_group_is_multi = [True if None in x else False for x in all_coord_counts]
+
         feat_coord_group_counts = [[ y for y in x if y is not None] for x in all_coord_counts]
         feat_coord_group_counts_per_part = [[ sum(y) for y in x if y is not None] for x in all_coord_counts]
 
         feat_coord_group_flat_counts: List[int] = [sum([ sum(y) for y in x if y is not None]) for x in all_coord_counts]
         
-        feat_coord_group_is_polygon = [True if None in x else False for x in all_coord_counts]
         feat_coord_groups = [flat_coords[sum(feat_coord_group_flat_counts[:i]):sum(feat_coord_group_flat_counts[:i])+x] for i, x in enumerate(feat_coord_group_flat_counts)]
 
         for i, geometry in enumerate(geometries):
             geometry["coordinates"] = []
-            if feat_coord_group_is_polygon[i] is False:
+            if feat_coord_group_is_multi[i] is False:
                 geometry["coordinates"].extend(feat_coord_groups[i])
             else:
                 polygon_parts = []
@@ -612,6 +614,7 @@ class SpeckleProvider(BaseProvider):
             
             if isinstance(f_base.geometry[0], Point):
                 geometry["type"] = "MultiPoint"
+                coord_counts.append(None)
                 
                 for geom in f_base.geometry:
                     coords.append([geom.x, geom.y])
@@ -619,15 +622,20 @@ class SpeckleProvider(BaseProvider):
                 
             elif isinstance(f_base.geometry[0], Polyline):
                 geometry["type"] = "MultiLineString"
+                coord_counts.append(None)
+
                 for geom in f_base.geometry:
                     coord_counts.append([])
+                    local_poly_count = 0
 
                     for pt in geom.as_points():
                         coords.append([pt.x, pt.y])
+                        local_poly_count += 1
                     if len(coords)>2 and geom.closed is True and coords[0] != coords[-1]:
                         coords.append(coords[0])
+                        local_poly_count += 1
 
-                    coord_counts[-1].append([len(coords)])
+                    coord_counts[-1].append(local_poly_count)
 
             elif isinstance(f_base.geometry[0], GisPolygonGeometry):
                 geometry["type"] = "MultiPolygon"
