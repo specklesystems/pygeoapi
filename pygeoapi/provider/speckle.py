@@ -373,6 +373,7 @@ class SpeckleProvider(BaseProvider):
 
     def traverse_data(self, commit_obj):
 
+        from specklepy.objects.geometry import Base
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
         from specklepy.objects.GIS.CRS import CRS
         from specklepy.objects.GIS.geometry import GisPolygonElement
@@ -422,8 +423,21 @@ class SpeckleProvider(BaseProvider):
             elif displayUnits is None and type(item) in supported_types:
                 displayUnits = item.units
 
+        # if CRS not found, create default one and get model units for scaling
         if self.crs is None:
             self.create_crs_default()
+            for item in context_list:
+                if hasattr(item.current, "displayValue"):
+                    if isinstance(item.current["displayValue"], list) and len(item.current["displayValue"])>0:
+                        displayUnits = item.current["displayValue"][0].units
+                        break
+                    elif isinstance(item.current["displayValue"], Base):
+                        displayUnits = item.current.units
+                        break
+                else:
+                    if item.current.units is not None:
+                        displayUnits = item.current.units
+                        break
 
         self.create_crs_dict(offset_x, offset_y, displayUnits)
 
@@ -488,14 +502,12 @@ class SpeckleProvider(BaseProvider):
 
         feat_coord_group_counts = [[ y for y in x if y is not None] for x in all_coord_counts]
         feat_coord_group_counts_per_part = [[ sum(y) for y in x if y is not None] for x in all_coord_counts]
-        print(feat_coord_group_counts_per_part)
 
         feat_coord_group_flat_counts: List[int] = [sum([ sum(y) for y in x if y is not None]) for x in all_coord_counts]
         
         feat_coord_groups = [flat_coords[sum(feat_coord_group_flat_counts[:i]):sum(feat_coord_group_flat_counts[:i])+x] for i, x in enumerate(feat_coord_group_flat_counts)]
 
         for i, geometry in enumerate(geometries):
-            print("________________")
             geometry["coordinates"] = []
             if feat_coord_group_is_multi[i] is False:
                 geometry["coordinates"].extend(feat_coord_groups[i])
@@ -523,7 +535,6 @@ class SpeckleProvider(BaseProvider):
                         polygon_parts.extend(poly_part)
                     else:
                         polygon_parts.append(poly_part)
-                    print(poly_part)
 
                 geometry["coordinates"].extend(polygon_parts)
         
