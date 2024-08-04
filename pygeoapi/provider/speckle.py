@@ -374,6 +374,7 @@ class SpeckleProvider(BaseProvider):
     def traverse_data(self, commit_obj):
 
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
+        from specklepy.objects.GIS.CRS import CRS
         from specklepy.objects.GIS.geometry import GisPolygonElement
         from specklepy.objects.GIS.GisFeature import GisFeature
         from specklepy.objects.graph_traversal.traversal import (
@@ -403,23 +404,28 @@ class SpeckleProvider(BaseProvider):
         # iterate Speckle objects to get "crs" property
         crs = None
         displayUnits = None
-        for item in context_list:
+        offset_x = 0
+        offset_y = 0
+        for item in [commit_obj] + commit_obj.elements:
             if (
                 crs is None
-                and item.current.speckle_type.endswith("Layer")
-                and hasattr(item.current, "crs")
+                and hasattr(item, "crs")
+                and isinstance(item["crs"], CRS)
             ):
-                crs = item.current["crs"]
+                crs = item["crs"]
                 displayUnits = crs["units_native"]
+                offset_x = crs["offset_x"]
+                offset_y = crs["offset_y"]
+                self.north_degrees = crs["rotation"]
                 self.create_crs_from_wkt(crs["wkt"])
                 break
-            elif displayUnits is None and type(item.current) in supported_types:
-                displayUnits = item.current.units
+            elif displayUnits is None and type(item) in supported_types:
+                displayUnits = item.units
 
         if self.crs is None:
             self.create_crs_default()
 
-        self.create_crs_dict(displayUnits)
+        self.create_crs_dict(offset_x, offset_y, displayUnits)
 
         # iterate to get features
         list_len = len(context_list)
@@ -533,12 +539,12 @@ class SpeckleProvider(BaseProvider):
         crs_obj = CRS.from_user_input(wkt)
         self.crs = crs_obj
 
-    def create_crs_dict(self, displayUnits: str | None):
+    def create_crs_dict(self, offset_x, offset_y, displayUnits: str | None):
         if self.crs is not None:
             self.crs_dict = {
                 "wkt": self.crs.to_wkt(),
-                "offset_x": 0,
-                "offset_y": 0,
+                "offset_x": offset_x,
+                "offset_y": offset_y,
                 "rotation": self.north_degrees,
                 "units_native": displayUnits,
                 "obj": self.crs,
