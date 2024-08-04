@@ -453,8 +453,9 @@ class SpeckleProvider(BaseProvider):
                 # "bbox": [-180.0, -90.0, 180.0, 90.0],
                 "geometry": {},
                 "properties": {
-                    "fid": len(data["features"]),
                     "id": f_id,
+                    "fid": len(data["features"]),
+                    "speckle_type": item.current.speckle_type,
                 },
             }
 
@@ -487,12 +488,14 @@ class SpeckleProvider(BaseProvider):
 
         feat_coord_group_counts = [[ y for y in x if y is not None] for x in all_coord_counts]
         feat_coord_group_counts_per_part = [[ sum(y) for y in x if y is not None] for x in all_coord_counts]
+        print(feat_coord_group_counts_per_part)
 
         feat_coord_group_flat_counts: List[int] = [sum([ sum(y) for y in x if y is not None]) for x in all_coord_counts]
         
         feat_coord_groups = [flat_coords[sum(feat_coord_group_flat_counts[:i]):sum(feat_coord_group_flat_counts[:i])+x] for i, x in enumerate(feat_coord_group_flat_counts)]
 
         for i, geometry in enumerate(geometries):
+            print("________________")
             geometry["coordinates"] = []
             if feat_coord_group_is_multi[i] is False:
                 geometry["coordinates"].extend(feat_coord_groups[i])
@@ -508,12 +511,19 @@ class SpeckleProvider(BaseProvider):
 
                     for part_count in poly_part_count_lists:
                         range_coords_indices = range(start_index, start_index + part_count)
-                        poly_part.append([local_flat_coords[ind] for ind in range_coords_indices])
+                        
+                        if geometry["type"] == "MultiPoint":
+                            poly_part.extend([local_flat_coords[ind] for ind in range_coords_indices])
+                        else:
+                            poly_part.append([local_flat_coords[ind] for ind in range_coords_indices])
 
                         start_index += part_count
                     
-                    polygon_parts.append(poly_part)
-
+                    if geometry["type"] in ["MultiPoint","MultiLineString"] :
+                        polygon_parts.extend(poly_part)
+                    else:
+                        polygon_parts.append(poly_part)
+                    print(poly_part)
 
                 geometry["coordinates"].extend(polygon_parts)
         
@@ -749,14 +759,13 @@ class SpeckleProvider(BaseProvider):
             all_prop_names = obj["attributes"].get_member_names()
 
             for prop_name in all_prop_names:
-                props["speckle_type"] = obj.speckle_type
-                props["id"] = obj.id
 
                 value = getattr(obj["attributes"], prop_name)
 
                 if (prop_name
                     in [
                         "geometry",
+                        "speckle_type",
                         "totalChildrenCount",
                         "units",
                         "applicationId",
@@ -782,6 +791,7 @@ class SpeckleProvider(BaseProvider):
                 prop_name
                 in [
                     "geometry",
+                    "speckle_type",
                     "totalChildrenCount",
                     "vertices",
                     "faces",
