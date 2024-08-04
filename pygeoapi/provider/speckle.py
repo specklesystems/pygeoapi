@@ -94,7 +94,7 @@ class SpeckleProvider(BaseProvider):
                     "pip",
                     "install",
                     "--upgrade",
-                    "specklepy==2.19.5",
+                    "specklepy==2.20.0-pygeoapi",
                     "-t",
                     str(path),
                 ],
@@ -375,12 +375,13 @@ class SpeckleProvider(BaseProvider):
 
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
         from specklepy.objects.GIS.geometry import GisPolygonElement
+        from specklepy.objects.GIS.GisFeature import GisFeature
         from specklepy.objects.graph_traversal.traversal import (
             GraphTraversal,
             TraversalRule,
         )
 
-        supported_types = [GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
+        supported_types = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
         # traverse commit
         data: Dict[str, Any] = {
             "type": "FeatureCollection",
@@ -512,7 +513,6 @@ class SpeckleProvider(BaseProvider):
         print((time3-time2).total_seconds())
         print("done")
 
-
     def create_crs_from_wkt(self, wkt: str | None):
 
         from pyproj import CRS
@@ -547,7 +547,8 @@ class SpeckleProvider(BaseProvider):
     def assign_geometry(self, feature: Dict, f_base):
 
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
-        from specklepy.objects.GIS.geometry import GisPolygonElement
+        from specklepy.objects.GIS.geometry import GisPolygonGeometry
+        from specklepy.objects.GIS.GisFeature import GisFeature
 
         geometry = feature["geometry"]
         coords = [] 
@@ -601,26 +602,47 @@ class SpeckleProvider(BaseProvider):
 
                 count += pt_count + 1
 
-        elif isinstance(f_base, GisPolygonElement):
-            geometry["type"] = "MultiPolygon"
-            coord_counts.append(None)
-
-            for polygon in f_base.geometry:
-                coord_counts.append([])
-                boundary_count = 0
-                for pt in polygon.boundary.as_points():
-                    coords.append([pt.x, pt.y])
-                    boundary_count += 1
+        elif isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
+            print(f_base.geometry)
+            if isinstance(f_base.geometry[0], Point):
+                geometry["type"] = "MultiPoint"
                 
-                coord_counts[-1].append(boundary_count)
+                for geom in f_base.geometry:
+                    coords.append([geom.x, geom.y])
+                    coord_counts.append([1])
+                
+            elif isinstance(f_base.geometry[0], Polyline):
+                geometry["type"] = "MultiLineString"
+                for geom in f_base.geometry:
+                    coord_counts.append([])
 
-                for void in polygon.voids:
-                    void_count = 0
-                    for pt_void in void.as_points():
-                        coords.append([pt_void.x, pt_void.y])
-                        void_count += 1
+                    for pt in geom.as_points():
+                        coords.append([pt.x, pt.y])
+                    if len(coords)>2 and geom.closed is True and coords[0] != coords[-1]:
+                        coords.append(coords[0])
+
+                    coord_counts[-1].append([len(coords)])
+
+            elif isinstance(f_base.geometry[0], GisPolygonGeometry):
+                geometry["type"] = "MultiPolygon"
+                coord_counts.append(None)
+
+                for polygon in f_base.geometry:
+                    coord_counts.append([])
+                    boundary_count = 0
+                    for pt in polygon.boundary.as_points():
+                        coords.append([pt.x, pt.y])
+                        boundary_count += 1
                     
-                    coord_counts[-1].append(void_count)
+                    coord_counts[-1].append(boundary_count)
+
+                    for void in polygon.voids:
+                        void_count = 0
+                        for pt_void in void.as_points():
+                            coords.append([pt_void.x, pt_void.y])
+                            void_count += 1
+                        
+                        coord_counts[-1].append(void_count)
 
         elif isinstance(f_base, Line):
             geometry["type"] = "LineString"
@@ -635,8 +657,8 @@ class SpeckleProvider(BaseProvider):
             for pt in f_base.as_points():
                 coords.append([pt.x, pt.y])
             if len(coords)>2 and f_base.closed is True and coords[0] != coords[-1]:
-
                 coords.append(coords[0])
+                
             coord_counts.append([len(coords)])
 
         elif isinstance(f_base, Curve):
@@ -714,15 +736,18 @@ class SpeckleProvider(BaseProvider):
 
             for prop_name in all_prop_names:
                 props["speckle_type"] = obj.speckle_type
+                props["id"] = obj.id
 
                 value = getattr(obj["attributes"], prop_name)
-                if prop_name == "applicationId":
-                    props["id"] = value
-                elif (prop_name
+
+                if (prop_name
                     in [
                         "geometry",
                         "totalChildrenCount",
                         "units",
+                        "applicationId",
+                        "Speckle_ID",
+                        "id",
                     ]
                 ):
                     pass
