@@ -167,7 +167,7 @@ def execute_from_flask(api_function, request: Request, *args,
     return get_response((headers, status, content))
 
 
-@BLUEPRINT.route('/')
+
 def landing_page():
     """
     OGC API landing page endpoint
@@ -284,13 +284,14 @@ def collection_queryables(collection_id=None):
                               collection_id)
 
 
-@BLUEPRINT.route('/collections/<path:collection_id>/items',
-                 methods=['GET', 'POST', 'OPTIONS'],
-                 provide_automatic_options=False)
-@BLUEPRINT.route('/collections/<path:collection_id>/items/<path:item_id>',
-                 methods=['GET', 'PUT', 'DELETE', 'OPTIONS'],
-                 provide_automatic_options=False)
-def collection_items(collection_id, item_id=None):
+@BLUEPRINT.route('/')
+#@BLUEPRINT.route('/collections/<path:collection_id>/items',
+#                 methods=['GET', 'POST', 'OPTIONS'],
+#                 provide_automatic_options=False)
+#@BLUEPRINT.route('/collections/<path:collection_id>/items/<path:item_id>',
+#                 methods=['GET', 'PUT', 'DELETE', 'OPTIONS'],
+#                 provide_automatic_options=False)
+def collection_items(item_id=None):
     """
     OGC API collections items endpoint
 
@@ -299,7 +300,7 @@ def collection_items(collection_id, item_id=None):
 
     :returns: HTTP response
     """
-
+    collection_id = 'speckle'
     CONFIG = get_config(request=request)
     api_ = API(CONFIG, OPENAPI)
 
