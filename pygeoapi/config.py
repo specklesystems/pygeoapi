@@ -54,8 +54,6 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
     :returns: `dict` of pygeoapi configuration
     """
 
-    # passed url: http://localhost:5000/?limit=1000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
-
     if not os.environ.get("PYGEOAPI_CONFIG"):
         raise RuntimeError("PYGEOAPI_CONFIG environment variable not set")
 

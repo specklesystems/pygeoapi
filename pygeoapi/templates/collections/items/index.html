@@ -10,8 +10,13 @@
 {% block body %}
   <section id="items"></section>
   <section id="collection">
-    <h1>{% for l in data['links'] if l.rel == 'collection' %} {{ l['title'] }} {% endfor %}</h1>
-    <p>{% trans %}Items in this collection{% endtrans %}.</p>
+    <h3>{% trans %}URL Parameters{% endtrans %}</h3>
+    <p>Speckle URL ('speckleurl'): <a href = "{{ data['speckle_url'] }}/">{{ data['speckle_url'] }}</a></p>
+    <p>{% trans %}CRS ID ('crsauthid'): {% endtrans %} {{ data['crs_authid'] }}</p>
+    <p>{% trans %}Latitide ('lat'): {% endtrans %} {{ data['lat'] }}</p>
+    <p>{% trans %}Longitude ('lon'): {% endtrans %} {{ data['lon'] }}</p>
+    <p>{% trans %}Angle to True North, in degrees ('north_degrees'): {% endtrans %} {{ data['north_degrees'] }}</p>
+    <p>{% trans %}Feature limit ('limit'): {% endtrans %} {{ data['limit'] }}</p>
   </section>
   <section id="items">
     {% if data['features'] %}
