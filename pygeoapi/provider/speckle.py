@@ -359,6 +359,7 @@ class SpeckleProvider(BaseProvider):
         try:
             commit_obj = operations.receive(objId, transport, None)
         except SpeckleException as ex:
+            print(ex)
             # e.g. SpeckleException: Can't get object b53a53697a/f8ce82b242e05eeaab4c6c59fb25e4a0: HTTP error 404 ()
             raise SpeckleException("Fetching data failed, Project might be set to Private.")
 
@@ -428,10 +429,14 @@ class SpeckleProvider(BaseProvider):
             self.create_crs_default()
             for item in context_list:
                 if hasattr(item.current, "displayValue"):
-                    if isinstance(item.current["displayValue"], list) and len(item.current["displayValue"])>0:
-                        displayUnits = item.current["displayValue"][0].units
+                    try:
+                        displayVal = item.current["displayValue"]
+                    except:
+                        displayVal = item.current.displayValue
+                    if isinstance(displayVal, list) and len(displayVal)>0:
+                        displayUnits = displayVal[0].units
                         break
-                    elif isinstance(item.current["displayValue"], Base):
+                    elif isinstance(displayVal, Base):
                         displayUnits = item.current.units
                         break
                 else:
