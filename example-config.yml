@@ -61,19 +61,13 @@ logging:
 metadata:
     identification:
         title:
-            en: pygeoapi default instance
-            fr: instance par défaut de pygeoapi
+            en: Speckle pygeoapi instance
         description:
             en: pygeoapi provides an API to geospatial data
-            fr: pygeoapi fournit une API aux données géospatiales
         keywords:
             en:
                 - geospatial
                 - data
-                - api
-            fr:
-                - géospatiale
-                - données
                 - api
         keywords_type: theme
         terms_of_service: https://creativecommons.org/licenses/by/4.0/
@@ -95,102 +89,22 @@ metadata:
         phone: +xx-xxx-xxx-xxxx
         fax: +xx-xxx-xxx-xxxx
         email: you@example.org
-        url: Contact URL
+        url: https://app.speckle.systems/
         hours: Mo-Fr 08:00-17:00
         instructions: During hours of service. Off on weekends.
         role: pointOfContact
 
 resources:
-    obs:
-        type: collection
-        title: Observations
-        description: My cool observations
-        keywords:
-            - observations
-            - monitoring
-        linked-data:
-            context:
-                - datetime: https://schema.org/DateTime
-                - vocab: https://example.com/vocab#
-                  stn_id: "vocab:stn_id"
-                  value: "vocab:value"
-        links:
-            - type: text/csv
-              rel: canonical
-              title: data
-              href: https://github.com/mapserver/mapserver/blob/branch-7-0/msautotest/wxs/data/obs.csv
-              hreflang: en-US
-            - type: text/csv
-              rel: alternate
-              title: data
-              href: https://raw.githubusercontent.com/mapserver/mapserver/branch-7-0/msautotest/wxs/data/obs.csv
-              hreflang: en-US
-        extents:
-            spatial:
-                bbox: [-180,-90,180,90]
-                crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
-            temporal:
-                begin: 2000-10-30T18:24:39Z
-                end: 2007-10-30T08:57:29Z
-        providers:
-            - type: feature
-              name: CSV
-              data: tests/data/obs.csv
-              id_field: id
-              geometry:
-                  x_field: long
-                  y_field: lat
-
-    lakes:
-        type: collection
-        title:
-            en: Large Lakes
-            fr: Grands Lacs
-        description:
-            en: lakes of the world, public domain
-            fr: lacs du monde, domaine public
-        keywords:
-            en:
-                - lakes
-                - water bodies
-            fr:
-                - lacs
-                - plans d'eau
-        links:
-            - type: text/html
-              rel: canonical
-              title: information
-              href: http://www.naturalearthdata.com/
-              hreflang: en-US
-        extents:
-            spatial:
-                bbox: [-180,-90,180,90]
-                crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
-            temporal:
-                begin: 2011-11-11T11:11:11Z
-                end: null  # or empty (either means open ended)
-        providers:
-            - type: feature
-              name: GeoJSON
-              data: tests/data/ne_110m_lakes.geojson
-              id_field: id
-              title_field: name
-
     speckle:
         type: collection
         title:
             en: Speckle data
-            fr: Grands Lacs
         description:
             en: some random data
-            fr: lacs du monde, domaine public
         keywords:
             en:
                 - 3d data
                 - speckle
-            fr:
-                - lacs
-                - plans d'eau
         links:
             - type: text/html
               rel: canonical

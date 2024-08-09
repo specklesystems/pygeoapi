@@ -112,8 +112,11 @@ class SpeckleProvider(BaseProvider):
         
         # assign global values
         self.url: str = self.data # to store the value and check if self.data has changed
+        self.speckle_url = self.url.lower().split("speckleurl=")[-1].split("&")[0].split("@")[0].split("?")[0]
+        print(self.speckle_url)
 
         self.speckle_data = None
+        self.model_name = ""
 
         self.crs = None
         self.crs_dict = None
@@ -330,15 +333,13 @@ class SpeckleProvider(BaseProvider):
         from specklepy.core.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
         from specklepy.core.api.client import SpeckleClient
-
-        url: str = self.url.lower().split("speckleurl=")[-1].split("&")[0]
         
         # get URL that will not trigget Client init
-        url_fe1: str = url.replace("projects", "streams").split("models")[0]
+        url_fe1: str = self.speckle_url.replace("projects", "streams").split("models")[0]
         wrapper: StreamWrapper = StreamWrapper(url_fe1)
 
         # set actual branch
-        wrapper.model_id = url.split("models/")[1].split("/")[0].split("&")[0].split("@")[0].split("?")[0]
+        wrapper.model_id = self.speckle_url.split("models/")[1].split("/")[0].split("&")[0]
         
         # get client by URL, no authentication
         client = SpeckleClient(host=wrapper.host, use_ssl=wrapper.host.startswith("https"))
@@ -347,6 +348,9 @@ class SpeckleProvider(BaseProvider):
         branch = client.branch.get(
             stream_id =wrapper.stream_id, name=wrapper.model_id
         )
+
+        # set the Model name
+        self.model_name = branch['name']
 
         commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]

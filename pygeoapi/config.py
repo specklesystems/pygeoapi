@@ -69,9 +69,7 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
             config_yaml = yaml_load(fh)
 
     # assign valid dictionnaries to Speckle resources
-    speckle_collection_pts = copy.deepcopy(config_yaml["resources"]["speckle"])
-    speckle_collection_lines = copy.deepcopy(config_yaml["resources"]["speckle"])
-    speckle_collection_polygons = copy.deepcopy(config_yaml["resources"]["speckle"])
+    speckle_collection_received = copy.deepcopy(config_yaml["resources"]["speckle"])
 
     # for the first time only: assign YAML value to CONFIG. Otherwise, don't modify
     if CONFIG == {}:
@@ -87,19 +85,13 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
 
     # once Speckle URL is found, set it as a provider
     if url_valid:
-        speckle_collection_pts["title"]["en"] = "Some Points"
-        speckle_collection_lines["title"]["en"] = "Some Lines"
-        speckle_collection_polygons["title"]["en"] = "Some Polygons"
+        # speckle_collection_pts["title"]["en"] = "Some Points"
 
         # assign speckle url and get the data
-        speckle_collection_pts["providers"][0]["data"] = speckle_url
-        speckle_collection_lines["providers"][0]["data"] = speckle_url
-        speckle_collection_polygons["providers"][0]["data"] = speckle_url
+        speckle_collection_received["providers"][0]["data"] = speckle_url
 
         CONFIG["resources"] = {
-            "speckle": speckle_collection_pts,
-            "speckle_lines": speckle_collection_lines,
-            "speckle_polygons": speckle_collection_polygons,
+            "speckle": speckle_collection_received,
         }
 
     return CONFIG

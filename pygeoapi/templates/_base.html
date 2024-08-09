@@ -38,58 +38,17 @@
   <div class="bg-light sticky-top border-bottom">
     <div class="container">
       <header class="d-flex flex-wrap justify-content-center py-3">
-        <a href="{{ config['server']['url'] }}"
+        <a href="{{ config['metadata']['contact']['url'] }}"
           class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-          <img src="{{ config['server']['url'] }}/static/img/logo.png"
+          <img src="{{ config['server']['url'] }}/static/img/speckle_logo.png"
             title="{{ config['metadata']['identification']['title'] }}" style="height:40px;vertical-align: middle;" /></a>
         <ul class="nav nav-pills">
-          <li class="nav-item">
-            <a href="mailto:{{ config['metadata']['contact']['email'] }}" class="nav-link" aria-current="page">{% trans %}Contact{% endtrans%}</a>
-          </li>
-          {% if config['server']['admin'] %}
-          <li class="nav-item">
-            <a href="{{ config['server']['url'] }}/admin/config" class="nav-link" aria-current="page">{% trans %}Admin{% endtrans %}</a>
-          </li>
-         {% endif %}
-          <!--
-            Add additional menu items here
-            <a href="https://pygeoapi.io" class="nav-link">About</a>
-          -->
         </ul>
       </header>
     </div>
   </div>
   <div class="crumbs">
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-12">
-        {% block crumbs %}
-        <a href="{{ config['server']['url'] }}">{% trans %}Home{% endtrans %}</a>
-        {% endblock %}
-        <span style="float:right">
-          {% set links_found = namespace(json=0, jsonld=0) %}
-
-          {% for link in data['links'] %}
-          {% if link['rel'] == 'alternate' and link['type'] and link['type'] in ['application/json', 'application/geo+json'] %}
-          {% set links_found.json = 1 %}
-          <a href="{{ link['href'] }}">{% trans %}json{% endtrans %}</a>
-          {% elif link['rel'] == 'alternate' and link['type'] and link['type'] == 'application/ld+json' %}
-          {% set links_found.jsonld = 1 %}
-          <a href="{{ link['href'] }}">{% trans %}jsonld{% endtrans %}</a>
-          {% endif %}
-          {% endfor %}
-
-          {% if links_found.json == 0 %}
-          <a href="?f=json">{% trans %}json{% endtrans %}</a>
-          {% endif %}
-          {% if links_found.jsonld == 0 %}
-          <a href="?f=jsonld">{% trans %}jsonld{% endtrans %}</a>
-          {% endif %}
-
-        </span>
-        </div>
-      </div>
-    </div>
+    
     </div>
     <main>
     <div class="container">
