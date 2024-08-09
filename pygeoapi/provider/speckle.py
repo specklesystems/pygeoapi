@@ -75,7 +75,7 @@ class SpeckleProvider(BaseProvider):
         if self.data is None:
             self.data = ""
             # raise ValueError(
-            #    "Please provide Speckle project link as an argument, e.g.: 'http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149'"
+            #    "Please provide Speckle project link as an argument, e.g.: 'http://localhost:5000/?limit=100000&https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'"
             # )
 
         from subprocess import run
@@ -156,7 +156,7 @@ class SpeckleProvider(BaseProvider):
 
         if self.data == "":
             raise ValueError(
-                "Please provide Speckle project link as an argument, e.g.: http://localhost:5000/?limit=100000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/f5e6de9149"
+                "Please provide Speckle project link as an argument, e.g.: http://localhost:5000/?limit=100000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d"
             )
 
         if (
