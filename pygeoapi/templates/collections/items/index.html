@@ -113,8 +113,17 @@
             var url = '{{ data['speckle_project_url'] }}/models/' + feature.id
             var html = '<span><a href="' + url + '">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
             layer.bindPopup(html);
+            
+            var myFillColor = feature.properties['color'];
+            layer.setStyle({
+                fillColor: myFillColor,
+                fillOpacity: 0.8,
+                weight: 0.5
+            });
         }
     });
+
+
     {% if data['features'][0]['geometry']['type'] == 'Point' %}
     var markers = L.markerClusterGroup({
         disableClusteringAtZoom: 9,

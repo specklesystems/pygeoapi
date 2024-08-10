@@ -497,6 +497,7 @@ class SpeckleProvider(BaseProvider):
                 all_coord_counts.append(coord_counts)
 
                 self.assign_props(f_base, feature["properties"])
+                self.assign_color(f_base, feature["properties"])
                 data["features"].append(feature)
         
         self.reproject_bulk(all_coords, all_coord_counts, [f["geometry"] for f in data["features"]])
@@ -870,6 +871,17 @@ class SpeckleProvider(BaseProvider):
                     props[prop_name] = str(value)
                 else:
                     props[prop_name] = value
+
+    def assign_color(self, obj, props):
+        from specklepy.objects.geometry import Base
+
+        r = 255
+        g = 0
+        b = 0
+
+        hex_color = '#%02x%02x%02x' % (r, g, b)
+        props['color'] = hex_color
+
 
     def get_python_path(self):
         if sys.platform.startswith("linux"):
