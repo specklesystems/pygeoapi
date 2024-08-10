@@ -330,9 +330,13 @@ class SpeckleProvider(BaseProvider):
     def load_speckle_data(self: str):
 
         from specklepy.logging.exceptions import SpeckleException
-        from specklepy.core.api import operations
+        from specklepy.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
         from specklepy.core.api.client import SpeckleClient
+        from specklepy.logging.metrics import set_host_app
+        from specklepy.transports.server import ServerTransport
+
+        set_host_app("pygeoapi", "0.0.99")
         
         # get URL that will not trigget Client init
         url_fe1: str = self.speckle_url.replace("projects", "streams").split("models")[0]
@@ -355,7 +359,7 @@ class SpeckleProvider(BaseProvider):
         commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]
 
-        transport = self.validateTransport(client, wrapper.stream_id)
+        transport = ServerTransport(client=client, account=client.account, stream_id=wrapper.stream_id)
         if transport == None:
             raise SpeckleException("Transport not found")
 
@@ -863,21 +867,6 @@ class SpeckleProvider(BaseProvider):
                     props[prop_name] = str(value)
                 else:
                     props[prop_name] = value
-
-    def validateTransport(
-        self, client: "SpeckleClient", streamId: str
-    ) -> Union["ServerTransport", None]:
-
-        from specklepy.core.api.credentials import (
-            get_default_account,
-        )
-        from specklepy.transports.server import ServerTransport
-
-        account = client.account
-        if not account.token:
-            account = get_default_account()
-        transport = ServerTransport(client=client, account=account, stream_id=streamId)
-        return transport
 
     def get_python_path(self):
         if sys.platform.startswith("linux"):
