@@ -353,6 +353,9 @@ class SpeckleProvider(BaseProvider):
             stream_id =wrapper.stream_id, name=wrapper.model_id
         )
 
+        if isinstance(branch, Exception):
+            raise SpeckleException(branch.message)
+
         # set the Model name
         self.model_name = branch['name']
 
