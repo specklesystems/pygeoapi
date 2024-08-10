@@ -174,10 +174,8 @@ def landing_page():
 
     :returns: HTTP response
     """
-
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
     
+    raise NotImplementedError()
     return get_response(api_.landing_page(request))
 
 
@@ -188,10 +186,8 @@ def openapi():
 
     :returns: HTTP response
     """
-
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
     
+    raise NotImplementedError()
     return get_response(api_.openapi_(request))
 
 
@@ -202,10 +198,8 @@ def conformance():
 
     :returns: HTTP response
     """
-
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
     
+    raise NotImplementedError()
     return get_response(api_.conformance(request))
 
 
@@ -219,6 +213,7 @@ def get_tilematrix_set(tileMatrixSetId=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(tiles_api.tilematrixset, request,
                               tileMatrixSetId)
 
@@ -231,6 +226,7 @@ def get_tilematrix_sets():
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(tiles_api.tilematrixsets, request)
 
 
@@ -244,10 +240,8 @@ def collections(collection_id=None):
 
     :returns: HTTP response
     """
-
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
     
+    raise NotImplementedError()
     return get_response(api_.describe_collections(request, collection_id))
 
 
@@ -261,9 +255,7 @@ def collection_schema(collection_id):
     :returns: HTTP response
     """
 
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
-    
+    raise NotImplementedError()
     return get_response(api_.get_collection_schema(request, collection_id))
 
 
@@ -277,9 +269,7 @@ def collection_queryables(collection_id=None):
     :returns: HTTP response
     """
 
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
-
+    raise NotImplementedError()
     return execute_from_flask(itemtypes_api.get_collection_queryables, request,
                               collection_id)
 
@@ -301,8 +291,6 @@ def collection_items(item_id=None):
     :returns: HTTP response
     """
     collection_id = 'speckle'
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
 
     if item_id is None:
         if request.method == 'GET':  # list items
@@ -351,7 +339,7 @@ def collection_coverage(collection_id):
 
     :returns: HTTP response
     """
-
+    raise NotImplementedError()
     return execute_from_flask(coverages_api.get_collection_coverage, request,
                               collection_id, skip_valid_check=True)
 
@@ -366,6 +354,7 @@ def get_collection_tiles(collection_id=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(tiles_api.get_collection_tiles, request,
                               collection_id)
 
@@ -382,6 +371,7 @@ def get_collection_tiles_metadata(collection_id=None, tileMatrixSetId=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(tiles_api.get_collection_tiles_metadata,
                               request, collection_id, tileMatrixSetId,
                               skip_valid_check=True)
@@ -403,6 +393,7 @@ def get_collection_tiles_data(collection_id=None, tileMatrixSetId=None,
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(
         tiles_api.get_collection_tiles_data,
         request, collection_id, tileMatrixSetId, tileMatrix, tileRow, tileCol,
@@ -422,6 +413,7 @@ def collection_map(collection_id, style_id=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(
         maps_api.get_collection_map, request, collection_id, style_id
     )
@@ -438,6 +430,7 @@ def get_processes(process_id=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(processes_api.describe_processes, request,
                               process_id)
 
@@ -454,6 +447,7 @@ def get_jobs(job_id=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     if job_id is None:
         return execute_from_flask(processes_api.get_jobs, request)
     else:
@@ -474,6 +468,7 @@ def execute_process_jobs(process_id):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(processes_api.execute_process, request,
                               process_id)
 
@@ -489,6 +484,7 @@ def get_job_result(job_id=None):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(processes_api.get_job_result, request, job_id)
 
 
@@ -504,6 +500,7 @@ def get_job_result_resource(job_id, resource):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     # TODO: this does not seem to exist?
     return get_response(api_.get_job_result_resource(
         request, job_id, resource))
@@ -557,6 +554,7 @@ def stac_catalog_root():
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(stac_api.get_stac_root, request)
 
 
@@ -570,6 +568,7 @@ def stac_catalog_path(path):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     return execute_from_flask(stac_api.get_stac_path, request, path)
 
 
@@ -581,6 +580,7 @@ def admin_config():
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     if request.method == 'GET':
         return get_response(admin_.get_config(request))
 
@@ -599,6 +599,7 @@ def admin_config_resources():
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     if request.method == 'GET':
         return get_response(admin_.get_resources(request))
 
@@ -616,6 +617,7 @@ def admin_config_resource(resource_id):
     :returns: HTTP response
     """
 
+    raise NotImplementedError()
     if request.method == 'GET':
         return get_response(admin_.get_resource(request, resource_id))
 
