@@ -328,7 +328,7 @@ class SpeckleProvider(BaseProvider):
         return f"<SpeckleProvider> {self.data}"
 
     def load_speckle_data(self: str):
-
+        
         from specklepy.logging.exceptions import SpeckleException
         from specklepy.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
@@ -339,14 +339,15 @@ class SpeckleProvider(BaseProvider):
         set_host_app("pygeoapi", "0.0.99")
         
         # get URL that will not trigget Client init
-        url_fe1: str = self.speckle_url.replace("projects", "streams").split("models")[0]
-        wrapper: StreamWrapper = StreamWrapper(url_fe1)
+        url_proj: str = self.speckle_url.split("models")[0]
+        wrapper: StreamWrapper = StreamWrapper(url_proj)
 
         # set actual branch
         wrapper.model_id = self.speckle_url.split("models/")[1].split("/")[0].split("&")[0]
         
         # get client by URL, no authentication
         client = SpeckleClient(host=wrapper.host, use_ssl=wrapper.host.startswith("https"))
+        client.account.serverInfo.url = url_proj.split("/projects")[0]
 
         # get branch data
         branch = client.branch.get(
@@ -358,6 +359,7 @@ class SpeckleProvider(BaseProvider):
 
         # set the Model name
         self.model_name = branch['name']
+        print(self.model_name)
 
         commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]
@@ -369,10 +371,9 @@ class SpeckleProvider(BaseProvider):
         # data transfer
         try:
             commit_obj = operations.receive(objId, transport, None)
-        except SpeckleException as ex:
-            print(ex)
+        except Exception as ex:
             # e.g. SpeckleException: Can't get object b53a53697a/f8ce82b242e05eeaab4c6c59fb25e4a0: HTTP error 404 ()
-            raise SpeckleException("Fetching data failed, Project might be set to Private.")
+            raise ex
 
         client.commit.received(
             wrapper.stream_id,
@@ -476,6 +477,7 @@ class SpeckleProvider(BaseProvider):
 
             f_base = item.current
             f_id = item.current.id
+            f_fid = len(data["features"]) + 1
 
             # feature
             feature: Dict = {
@@ -484,7 +486,7 @@ class SpeckleProvider(BaseProvider):
                 "geometry": {},
                 "properties": {
                     "id": f_id,
-                    "fid": len(data["features"]),
+                    "FID": f_fid,
                     "speckle_type": item.current.speckle_type,
                 },
             }
@@ -497,7 +499,24 @@ class SpeckleProvider(BaseProvider):
                 all_coord_counts.append(coord_counts)
 
                 self.assign_props(f_base, feature["properties"])
-                self.assign_color(f_base, feature["properties"])
+
+                feature["displayProperties"] = {}
+                self.assign_color(f_base, feature["displayProperties"])
+
+                # other properties for rendering 
+                if isinstance(f_base, Mesh) or isinstance(f_base, Brep):
+                    feature["displayProperties"]['lineWidth'] = 0.3
+                elif "Line" in feature["geometry"]["type"]: 
+                    feature["displayProperties"]['lineWidth'] = 2
+                else: 
+                    feature["displayProperties"]['lineWidth'] = 1
+
+                # if "Point" in feature["geometry"]["type"]:
+                try:
+                    feature["displayProperties"]["radius"] = feature["properties"]["weight"]
+                except:
+                    feature["displayProperties"]["radius"] = 1
+
                 data["features"].append(feature)
         
         self.reproject_bulk(all_coords, all_coord_counts, [f["geometry"] for f in data["features"]])
@@ -872,15 +891,59 @@ class SpeckleProvider(BaseProvider):
                 else:
                     props[prop_name] = value
 
-    def assign_color(self, obj, props):
+    def find_display_obj(self, obj):
+
         from specklepy.objects.geometry import Base
 
-        r = 255
-        g = 0
-        b = 0
+        if hasattr(obj, 'displayValue'):
+            displayVal = obj.displayValue
+            if isinstance(displayVal, List):
+                for item in displayVal:
+                    return item
+            
+            if isinstance(displayVal, Base):
+                return displayVal
+        return obj
 
+    def assign_color(self, obj, props):
+        from specklepy.objects.geometry import Base, Mesh
+
+        # initialize grey color
+        color = (255 << 24) + (150 << 16) + (150 << 8) + 150
+
+        # find color property
+        obj_display = self.find_display_obj(obj)
+
+        try:
+            if hasattr(obj_display, 'renderMaterial'):
+                color = obj_display.renderMaterial.diffuse
+            elif hasattr(obj_display, 'displayStyle'):
+                color = obj_display.displayStyle['color']
+            elif isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
+                sameColors = True
+                color1 = obj_display.colors[0]
+                for c in obj_display.colors:
+                    if c != color1:
+                        sameColors = False
+                        break
+                if sameColors is True:
+                    color = color1
+        except Exception as e:
+            print(e)
+        
+        r, g, b = self.get_r_g_b(color)
         hex_color = '#%02x%02x%02x' % (r, g, b)
         props['color'] = hex_color
+
+    def get_r_g_b(self, rgb: int) -> Tuple[int, int, int]:
+        r = g = b = 0
+        try:
+            r = (rgb & 0xFF0000) >> 16
+            g = (rgb & 0xFF00) >> 8
+            b = rgb & 0xFF
+        except Exception as e:
+            r = g = b = 150
+        return r, g, b
 
 
     def get_python_path(self):
