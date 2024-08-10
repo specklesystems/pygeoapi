@@ -558,12 +558,13 @@ def get_collection_items(
     
     # Save passed parameters
     url_props = collections[dataset]['providers'][0]['data'].lower().split("&")
-    content['speckle_url'] = content['crs_authid'] = content['lat'] = content['lon'] = content['north_degrees'] = content['limit'] = "-"
+    content['speckle_url'] = content['speckle_project_url'] = content['crs_authid'] = content['lat'] = content['lon'] = content['north_degrees'] = content['limit'] = "-"
     crsauthid = False
     for item in url_props:
         # if CRS authid is found, rest will be ignored
         if "speckleurl=" in item:
             content['speckle_url'] = item.split("speckleurl=")[1]
+            content['speckle_project_url'] = content['speckle_url'].split("/models")[0]
         elif "crsauthid=" in item:
             content['crs_authid'] = item.split("crsauthid=")[1]
             crsauthid = True
