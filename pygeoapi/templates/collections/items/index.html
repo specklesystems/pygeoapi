@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block body %}
-  <section id="items"></section>
   <section id="collection">
     <h3>{% trans %}URL Parameters{% endtrans %}</h3>
     <p>Speckle URL ('speckleurl'): <a href = "{{ data['speckle_url'] }}/">{{ data['speckle_url'] }}</a></p>
@@ -103,7 +102,7 @@
     var map = L.map('items-map').setView([{{ 45 }}, {{ -75 }}], 5);
     map.addLayer(new L.TileLayer(
         '{{ config['server']['map']['url'] }}', {
-            maxZoom: 22,
+            maxZoom: 24,
             attribution: '{{ config['server']['map']['attribution'] | safe }}'
         }
     ));
