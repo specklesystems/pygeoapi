@@ -9,13 +9,23 @@
 
 {% block body %}
   <section id="collection">
-    <h3>{% trans %}URL Parameters{% endtrans %}</h3>
-    <p>Speckle URL ('speckleurl'): <a href = "{{ data['speckle_url'] }}/">{{ data['speckle_url'] }}</a></p>
-    <p>{% trans %}CRS ID ('crsauthid'): {% endtrans %} {{ data['crs_authid'] }}</p>
-    <p>{% trans %}Latitide ('lat'): {% endtrans %} {{ data['lat'] }}</p>
-    <p>{% trans %}Longitude ('lon'): {% endtrans %} {{ data['lon'] }}</p>
-    <p>{% trans %}Angle to True North, in degrees ('northdegrees'): {% endtrans %} {{ data['north_degrees'] }}</p>
-    <p>{% trans %}Feature limit ('limit'): {% endtrans %} {{ data['limit'] }}</p>
+    <div class="row">
+      <div class="col-sm-12 col-md-6">
+        <h3>{% trans %}Model location data{% endtrans %}</h3>
+        <p>{% trans %}If Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
+        <p>{% trans %}Coordinate Reference System: {% endtrans %} {{ data['model_crs'] }}</p>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <h3>{% trans %}URL Parameters{% endtrans %}</h3>
+        <p>Speckle URL ('speckleurl'): <a href = "{{ data['speckle_url'] }}/">{{ data['speckle_url'] }}</a></p>
+        <p>{% trans %}Coordinate Reference System ID ('crsauthid'): {% endtrans %} {{ data['crs_authid'] }}</p>
+        <p>{% trans %}Latitide ('lat'): {% endtrans %} {{ data['lat'] }}</p>
+        <p>{% trans %}Longitude ('lon'): {% endtrans %} {{ data['lon'] }}</p>
+        <p>{% trans %}Angle to True North, in degrees ('northdegrees'): {% endtrans %} {{ data['north_degrees'] }}</p>
+        <p>{% trans %}Feature limit ('limit'): {% endtrans %} {{ data['limit'] }}</p>
+      </div>
+    </div>
+
   </section>
   <section id="items">
     {% if data['features'] %}

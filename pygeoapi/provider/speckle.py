@@ -401,6 +401,7 @@ class SpeckleProvider(BaseProvider):
         data: Dict[str, Any] = {
             "type": "FeatureCollection",
             "features": [],
+            "model_crs": "-",
         }
         self.assign_crs_to_geojson(data)
 
@@ -432,6 +433,11 @@ class SpeckleProvider(BaseProvider):
                 offset_y = crs["offset_y"]
                 self.north_degrees = crs["rotation"]
                 self.create_crs_from_wkt(crs["wkt"])
+
+                if self.crs.to_authority() is not None:
+                    data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "
+                else:
+                    data["model_crs"] = f"{self.crs.to_proj4()}"
                 break
             elif displayUnits is None and type(item) in supported_types:
                 displayUnits = item.units
