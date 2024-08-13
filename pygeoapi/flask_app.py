@@ -177,14 +177,24 @@ def landing_page():
     
     collection_id = "speckle"
 
-    # TODO: if requested from the browser, return this, otherwise ignore IF statement
     agent = request.headers.get('User-Agent')
-    print(agent)
     # Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
     # Mozilla/5.0 QGIS/32815/Windows 10 Version 2009
     # ArcGIS Pro 3.3.0 (00000000000) - ArcGISPro
 
-    if request.method == 'GET' and ("GIS" not in agent):  # list items
+    browser_agent = False
+    browser_list = ["Chrome", "Safari", "Firefox", "Edg/", "Trident/"]
+    print(agent)
+    
+    if "YaBrowser/" in agent:
+        raise ValueError("Your browser is not supported.")
+    for br in browser_list:
+        if br in agent:
+            browser_agent = True
+            break
+    
+    # if requested from the browser, return this, otherwise ignore IF statement
+    if request.method == 'GET' and browser_agent:  # list items
         return execute_from_flask(itemtypes_api.get_collection_items,
                                     request, collection_id,
                                     skip_valid_check=True)
