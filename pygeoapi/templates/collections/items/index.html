@@ -116,14 +116,21 @@
             attribution: '{{ config['server']['map']['attribution'] | safe }}'
         }
     ));
+
     var geojson_data = {{ data['features'] | to_json | safe }};
 
     var items = new L.GeoJSON(geojson_data, {
+        // filter: (feature) => {
+        //   return feature['geometry']['type'] != 'Point' && feature['geometry']['type'] != 'MultiPoint'
+        // },
+        pointToLayer: (feature, latlng) => {
+            return new L.circleMarker(latlng)            
+        },
         onEachFeature: function (feature, layer) {
             var url = '{{ data['speckle_project_url'] }}/models/' + feature.id
             var html = '<span><a href="' + url + '">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
             layer.bindPopup(html);
-            
+
             var myFillColor = feature.displayProperties['color'];
             var mylineWeight = feature.displayProperties['lineWidth'];
             var myRadius = feature.displayProperties['radius'];
@@ -136,22 +143,14 @@
                 radius: myRadius
             });
         }
-    });
+    }); //.addTo(map);
 
+    var group = L.featureGroup([items])
+    .addTo(map);
 
-    {% if data['features'][0]['geometry']['type'] == 'Point' %}
-    var markers = L.markerClusterGroup({
-        disableClusteringAtZoom: 9,
-        chunkedLoading: true,
-        chunkInterval: 500,
-    });
-    markers.clearLayers().addLayer(items);
-    map.addLayer(markers);
-    {% else %}
-    map.addLayer(items);
-    {% endif %}
+    //map.addLayer(lines);
 
-    map.fitBounds(items.getBounds());
+    map.fitBounds(group.getBounds());
     </script>
 {% endif %}
 {% endblock %}

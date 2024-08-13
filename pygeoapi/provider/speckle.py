@@ -513,7 +513,7 @@ class SpeckleProvider(BaseProvider):
                 if isinstance(f_base, Mesh) or isinstance(f_base, Brep):
                     feature["displayProperties"]['lineWidth'] = 0.3
                 elif "Line" in feature["geometry"]["type"]: 
-                    feature["displayProperties"]['lineWidth'] = 2
+                    feature["displayProperties"]['lineWidth'] = 3
                 else: 
                     feature["displayProperties"]['lineWidth'] = 1
 
@@ -521,7 +521,7 @@ class SpeckleProvider(BaseProvider):
                 try:
                     feature["displayProperties"]["radius"] = feature["properties"]["weight"]
                 except:
-                    feature["displayProperties"]["radius"] = 1
+                    feature["displayProperties"]["radius"] = 10
 
                 data["features"].append(feature)
         
@@ -630,7 +630,8 @@ class SpeckleProvider(BaseProvider):
         coord_counts = []
 
         if isinstance(f_base, Point):
-            geometry["type"] = "Point"
+            geometry["type"] = "MultiPoint"
+            coord_counts.append(None)
 
             coords.append([f_base.x, f_base.y])
             coord_counts.append([1])
@@ -914,8 +915,8 @@ class SpeckleProvider(BaseProvider):
     def assign_color(self, obj, props):
         from specklepy.objects.geometry import Base, Mesh
 
-        # initialize grey color
-        color = (255 << 24) + (150 << 16) + (150 << 8) + 150
+        # initialize Speckle Blue color
+        color = (255 << 24) + (10 << 16) + (132 << 8) + 255
 
         # find color property
         obj_display = self.find_display_obj(obj)
