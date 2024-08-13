@@ -924,9 +924,13 @@ class SpeckleProvider(BaseProvider):
 
         try:
             if hasattr(obj_display, 'renderMaterial'):
-                color = obj_display.renderMaterial.diffuse
+                color = obj_display['renderMaterial']['diffuse']
+            elif hasattr(obj_display, '@renderMaterial'):
+                color = obj_display['@renderMaterial']['diffuse']
             elif hasattr(obj_display, 'displayStyle'):
-                color = obj_display.displayStyle['color']
+                color = obj_display['displayStyle']['color']
+            elif hasattr(obj_display, '@displayStyle'):
+                color = obj_display['@displayStyle']['color']
             elif isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
                 sameColors = True
                 color1 = obj_display.colors[0]
