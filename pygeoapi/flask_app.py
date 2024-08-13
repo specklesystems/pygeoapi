@@ -179,6 +179,7 @@ def landing_page():
 
     # TODO: if requested from the browser, return this, otherwise ignore IF statement
     agent = request.headers.get('User-Agent')
+    print(agent)
     # Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
     # Mozilla/5.0 QGIS/32815/Windows 10 Version 2009
     # ArcGIS Pro 3.3.0 (00000000000) - ArcGISPro
