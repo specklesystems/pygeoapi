@@ -113,7 +113,6 @@ class SpeckleProvider(BaseProvider):
         # assign global values
         self.url: str = self.data # to store the value and check if self.data has changed
         self.speckle_url = self.url.lower().split("speckleurl=")[-1].split("&")[0].split("@")[0].split("?")[0]
-        print(self.speckle_url)
 
         self.speckle_data = None
         self.model_name = ""
@@ -158,6 +157,7 @@ class SpeckleProvider(BaseProvider):
         """Validate Speckle data"""
 
         if self.data == "":
+            return 
             raise ValueError(
                 "Please provide Speckle project link as an argument, e.g.: http://localhost:5000/?limit=100000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d"
             )
@@ -273,6 +273,8 @@ class SpeckleProvider(BaseProvider):
             properties=properties,
             select_properties=select_properties,
         )
+        if data is None:
+            return {}
 
         data["numberMatched"] = len(data["features"])
 
@@ -586,7 +588,6 @@ class SpeckleProvider(BaseProvider):
         
         time3 = datetime.now()
         print((time3-time2).total_seconds())
-        print("done")
 
     def create_crs_from_wkt(self, wkt: str | None):
 

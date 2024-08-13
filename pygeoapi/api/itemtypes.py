@@ -557,13 +557,21 @@ def get_collection_items(
         '%Y-%m-%dT%H:%M:%S.%fZ')
     
     # Save passed parameters
-    url_props = collections[dataset]['providers'][0]['data'].lower().split("&")
+    url_saved_as_data = collections[dataset]['providers'][0]['data']
+    url_props = []
+
+    if isinstance(url_saved_as_data, str):
+        url_props = url_saved_as_data.lower().split("&")
+    
+    content['missing_url'] = content['missing_url_href'] = ""
     content['speckle_url'] = content['speckle_project_url'] = content['crs_authid'] = content['lat'] = content['lon'] = content['north_degrees'] = content['limit'] = "-"
     crsauthid = False
     for item in url_props:
         # if CRS authid is found, rest will be ignored
         if "speckleurl=" in item:
             content['speckle_url'] = item.split("speckleurl=")[1]
+            if content['speckle_url'][-1] == "/":
+                content['speckle_url'] = content['speckle_url'][:-1]
             content['speckle_project_url'] = content['speckle_url'].split("/models")[0]
         elif "crsauthid=" in item:
             content['crs_authid'] = item.split("crsauthid=")[1]
@@ -577,6 +585,10 @@ def get_collection_items(
         elif "limit=" in item:
             content['limit'] = int(item.split("limit=")[1])
     
+    if content['speckle_url'] == "-":
+        content['missing_url'] = "Provide Speckle project link as an argument to start exploring, e.g.: "
+        content['missing_url_href'] = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c"
+
     if crsauthid:
         content['lat'] += " (not applied)"
         content['lon'] += " (not applied)"
