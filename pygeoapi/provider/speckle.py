@@ -376,12 +376,17 @@ class SpeckleProvider(BaseProvider):
         client.account.serverInfo.url = url_proj.split("/projects")[0]
 
         # get branch data
-        branch = client.branch.get(
-            stream_id =wrapper.stream_id, name=wrapper.model_id
+        stream = client.stream.get(
+            id = wrapper.stream_id, branch_limit=100
         )
 
-        if isinstance(branch, Exception):
-            raise SpeckleException(branch.message)
+        if isinstance(stream, Exception):
+            raise SpeckleException(stream.message+ ", "+ self.speckle_url)
+
+        for br in stream['branches']['items']:
+            if br['id'] == wrapper.model_id:
+                branch = br
+                break
 
         # set the Model name
         self.model_name = branch['name']
@@ -407,7 +412,7 @@ class SpeckleProvider(BaseProvider):
             source_application="pygeoapi",
             message="Received commit in pygeoapi",
         )
-        print(f"Rendering model '{branch['name']}'")
+        print(f"Rendering model '{branch['name']}' of project '{stream['name']}'")
         return self.traverse_data(commit_obj)
 
     def traverse_data(self, commit_obj):
