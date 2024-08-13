@@ -86,7 +86,7 @@ class SpeckleProvider(BaseProvider):
             import specklepy
 
         except ModuleNotFoundError:
-            from pygeoapi.provider.speckle_utils.patch_specklepy import patch_credentials, copy_gis_feature
+            from pygeoapi.provider.speckle_utils.patch_specklepy import patch_credentials, copy_gis_feature, patch_transport
 
             completed_process = run(
                 [
@@ -111,6 +111,7 @@ class SpeckleProvider(BaseProvider):
             )
             patch_credentials()
             copy_gis_feature()
+            patch_transport()
 
             if completed_process.returncode != 0:
                 m = f"Failed to install dependenices through pip, got {completed_process.returncode} as return code. Full log: {completed_process}"
@@ -389,7 +390,7 @@ class SpeckleProvider(BaseProvider):
         commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]
 
-        transport = ServerTransport(client=client, stream_id=wrapper.stream_id)
+        transport = ServerTransport(client=client, account=client.account, stream_id=wrapper.stream_id)
         if transport == None:
             raise SpeckleException("Transport not found")
 
