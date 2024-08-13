@@ -167,7 +167,7 @@ def execute_from_flask(api_function, request: Request, *args,
     return get_response((headers, status, content))
 
 
-
+@BLUEPRINT.route('/')
 def landing_page():
     """
     OGC API landing page endpoint
@@ -175,7 +175,7 @@ def landing_page():
     :returns: HTTP response
     """
     
-    raise NotImplementedError()
+    #raise NotImplementedError()
     return get_response(api_.landing_page(request))
 
 
@@ -187,7 +187,7 @@ def openapi():
     :returns: HTTP response
     """
     
-    raise NotImplementedError()
+    # raise NotImplementedError()
     return get_response(api_.openapi_(request))
 
 
@@ -199,7 +199,7 @@ def conformance():
     :returns: HTTP response
     """
     
-    raise NotImplementedError()
+    # raise NotImplementedError()
     return get_response(api_.conformance(request))
 
 
@@ -241,7 +241,7 @@ def collections(collection_id=None):
     :returns: HTTP response
     """
     
-    raise NotImplementedError()
+    # raise NotImplementedError()
     return get_response(api_.describe_collections(request, collection_id))
 
 
@@ -255,7 +255,7 @@ def collection_schema(collection_id):
     :returns: HTTP response
     """
 
-    raise NotImplementedError()
+    # raise NotImplementedError()
     return get_response(api_.get_collection_schema(request, collection_id))
 
 
@@ -269,19 +269,19 @@ def collection_queryables(collection_id=None):
     :returns: HTTP response
     """
 
-    raise NotImplementedError()
+    # raise NotImplementedError()
     return execute_from_flask(itemtypes_api.get_collection_queryables, request,
                               collection_id)
 
 
-@BLUEPRINT.route('/')
-#@BLUEPRINT.route('/collections/<path:collection_id>/items',
-#                 methods=['GET', 'POST', 'OPTIONS'],
-#                 provide_automatic_options=False)
-#@BLUEPRINT.route('/collections/<path:collection_id>/items/<path:item_id>',
-#                 methods=['GET', 'PUT', 'DELETE', 'OPTIONS'],
-#                 provide_automatic_options=False)
-def collection_items(item_id=None):
+# @BLUEPRINT.route('/')
+@BLUEPRINT.route('/collections/<path:collection_id>/items',
+                 methods=['GET', 'POST', 'OPTIONS'],
+                 provide_automatic_options=False)
+@BLUEPRINT.route('/collections/<path:collection_id>/items/<path:item_id>',
+                 methods=['GET', 'PUT', 'DELETE', 'OPTIONS'],
+                 provide_automatic_options=False)
+def collection_items(collection_id, item_id=None):
     """
     OGC API collections items endpoint
 
