@@ -389,7 +389,7 @@ class SpeckleProvider(BaseProvider):
         commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]
 
-        transport = ServerTransport(client=client, account=client.account, stream_id=wrapper.stream_id)
+        transport = ServerTransport(client=client, stream_id=wrapper.stream_id)
         if transport == None:
             raise SpeckleException("Transport not found")
 
@@ -549,7 +549,10 @@ class SpeckleProvider(BaseProvider):
                     feature["displayProperties"]["radius"] = 10
 
                 data["features"].append(feature)
-        
+
+        if len(all_coords)==0:
+            raise ValueError("No supported features found")
+
         self.reproject_bulk(all_coords, all_coord_counts, [f["geometry"] for f in data["features"]])
 
         return data
