@@ -16,7 +16,7 @@ def get_credentials_path():
 
 def get_transport_path():
     specklepy_path = get_specklepy_path()
-    credentials_path = Path(specklepy_path, "api", "operations.py")
+    credentials_path = Path(specklepy_path, "transports", "server", "server.py")
 
     return str(credentials_path)
 
@@ -59,10 +59,8 @@ def patch_transport():
         lines = file.readlines()
         new_lines = []
         for i, line in enumerate(lines):
-            if "return _untracked_receive(obj_id, remote_transport, local_transport)" in line:
-                line2 = line.replace("return _untracked_receive(obj_id, remote_transport, local_transport)", "remote_transport.account = None")
-                if lines[i-1] != line2:
-                    new_lines.append(line2)
+            if "if self.account is not None:" in line:
+                line = line.replace("if self.account is not None:", "if self.account.token is not None:")
             new_lines.append(line)
     file.close()
 
