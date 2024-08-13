@@ -59,8 +59,27 @@ def patch_transport():
         lines = file.readlines()
         new_lines = []
         for i, line in enumerate(lines):
-            if "if self.account is not None:" in line:
+
+            if 'if self.account is not None:' in line:
                 line = line.replace("if self.account is not None:", "if self.account.token is not None:")
+            
+            if 'lines = r.iter_lines(decode_unicode=True)' in line:
+                line = line.replace('lines = r.iter_lines(decode_unicode=True)', 'lines = r.iter_lines(decode_unicode=True, delimiter="},{")')
+            
+            if 'for line in lines:' in line:
+                line1 = line.replace('for line in lines:','all_lines = [line for _,line in enumerate(lines)]')
+                new_lines.append(line1)
+                line = line.replace('for line in lines:','for i, line in enumerate(all_lines):')
+            if 'hash, obj = line.split("\\t")' in line:
+                line1 = line.replace('hash, obj = line.split("\\t")','hash = line.split(\'"id": "\')[1].split(\'"\')[0]')
+                line2 = line.replace('hash, obj = line.split("\\t")','obj = "{" + line + "}"')
+                line3 = line.replace('hash, obj = line.split("\\t")','if i==0:')
+                line4 = line.replace('hash, obj = line.split("\\t")','    obj = obj[2:]')
+                line5 = line.replace('hash, obj = line.split("\\t")','elif i==len(all_lines)-1:')
+                new_lines.extend([line1, line2, line3, line4, line5])
+
+                line = line.replace('hash, obj = line.split("\\t")','    obj = obj[:-2]')
+            
             new_lines.append(line)
     file.close()
 
