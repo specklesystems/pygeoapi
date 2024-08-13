@@ -80,12 +80,13 @@ class SpeckleProvider(BaseProvider):
 
         from subprocess import run
 
-        path = str(self.connector_installation_path(_host_application))
+        # path = str(self.connector_installation_path(_host_application))
 
         try:
             import specklepy
 
         except ModuleNotFoundError:
+            from speckle_utils.patch_specklepy import patch_credentials, copy_gis_feature
 
             completed_process = run(
                 [
@@ -94,12 +95,22 @@ class SpeckleProvider(BaseProvider):
                     "pip",
                     "install",
                     "--upgrade",
-                    "specklepy==2.20.0-pygeoapi",
-                    "-t",
-                    str(path),
+                    "specklepy==2.19.6",
                 ],
                 capture_output=True,
             )
+            completed_process = run(
+                [
+                    self.get_python_path(),
+                    "-m",
+                    "pip",
+                    "install",
+                    "pydantic==1.10.17",
+                ],
+                capture_output=True,
+            )
+            patch_credentials()
+            copy_gis_feature()
 
             if completed_process.returncode != 0:
                 m = f"Failed to install dependenices through pip, got {completed_process.returncode} as return code. Full log: {completed_process}"
