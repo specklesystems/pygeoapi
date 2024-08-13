@@ -298,7 +298,7 @@ class SpeckleProvider(BaseProvider):
             select_properties=select_properties,
         )
         if data is None:
-            return {}
+            return {"features":[]}
 
         data["numberMatched"] = len(data["features"])
 
@@ -412,7 +412,7 @@ class SpeckleProvider(BaseProvider):
             source_application="pygeoapi",
             message="Received commit in pygeoapi",
         )
-        print(f"Rendering model '{branch['name']}' of project '{stream['name']}'")
+        print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
         return self.traverse_data(commit_obj)
 
     def traverse_data(self, commit_obj):

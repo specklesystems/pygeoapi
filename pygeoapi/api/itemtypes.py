@@ -305,7 +305,18 @@ def get_collection_items(
         provider_type = 'feature'
         provider_def = get_provider_by_type(
             collections[dataset]['providers'], provider_type)
+
+        # clear data if no URL params
+        load_data = False
+        for item in request.params:
+            if item == 'speckleUrl' and len(request.params[item])>40 and ('speckleUrl=' + request.params[item]) in provider_def['data']:
+                load_data = True
+                break
+        if load_data is False:
+            provider_def['data'] = ""
+        
         p = load_plugin('provider', provider_def)
+
     except ProviderTypeError:
         try:
             provider_type = 'record'
