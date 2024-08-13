@@ -588,9 +588,9 @@ def get_collection_items(
                 content['lon'] = f"Invalid input, must be numeric: {item.split('lon=')[1]}"
         elif "northdegrees=" in item:
             try:
-                content['northdegrees'] = float(item.split("northdegrees=")[1])
+                content['north_degrees'] = float(item.split("northdegrees=")[1])
             except:
-                content['northdegrees'] = f"Invalid input, must be numeric: {item.split('northdegrees=')[1]}"
+                content['north_degrees'] = f"Invalid input, must be numeric: {item.split('northdegrees=')[1]}"
         elif "limit=" in item:
             try:
                 content['limit'] = float(item.split("limit=")[1])
