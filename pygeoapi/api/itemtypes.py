@@ -577,13 +577,25 @@ def get_collection_items(
             content['crs_authid'] = item.split("crsauthid=")[1]
             crsauthid = True
         elif "lat=" in item:
-            content['lat'] = float(item.split("lat=")[1])
+            try:
+                content['lat'] = float(item.split("lat=")[1])
+            except:
+                content['lat'] = f"Invalid input, must be numeric: {item.split('lat=')[1]}"
         elif "lon=" in item:
-            content['lon'] = float(item.split("lon=")[1])
+            try:
+                content['lon'] = float(item.split("lon=")[1])
+            except:
+                content['lon'] = f"Invalid input, must be numeric: {item.split('lon=')[1]}"
         elif "northdegrees=" in item:
-            content['north_degrees'] = float(item.split("northdegrees=")[1])
+            try:
+                content['northdegrees'] = float(item.split("northdegrees=")[1])
+            except:
+                content['northdegrees'] = f"Invalid input, must be numeric: {item.split('northdegrees=')[1]}"
         elif "limit=" in item:
-            content['limit'] = int(item.split("limit=")[1])
+            try:
+                content['limit'] = float(item.split("limit=")[1])
+            except:
+                content['limit'] = f"Invalid input, must be integer: {item.split('limit=')[1]}"
     
     if content['speckle_url'] == "-":
         content['missing_url'] = "Provide Speckle project link as an argument to start exploring, e.g.: "

@@ -175,11 +175,23 @@ class SpeckleProvider(BaseProvider):
                 if "crsauthid=" in item:
                     crs_authid = item.split("crsauthid=")[1]
                 elif "lat=" in item:
-                    self.lat = float(item.split("lat=")[1])
+                    try:
+                        self.lat = float(item.split("lat=")[1])
+                    except:
+                        pass
+                        # raise ValueError(f"Invalid Lat input, must be numeric: {item.split('lat=')[1]}")
                 elif "lon=" in item:
-                    self.lon = float(item.split("lon=")[1])
+                    try:
+                        self.lon = float(item.split("lon=")[1])
+                    except:
+                        pass
+                        # raise ValueError(f"Invalid Lon input, must be numeric: {item.split('lon=')[1]}")
                 elif "northdegrees=" in item:
-                    self.north_degrees = float(item.split("northdegrees=")[1])
+                    try:
+                        self.north_degrees = float(item.split("northdegrees=")[1])
+                    except:
+                        pass
+                        # raise ValueError(f"Invalid NorthDegrees input, must be numeric: {item.split('northdegrees=')[1]}")
 
             # if CRS assigned, create one:
             if len(crs_authid)>3:
