@@ -86,7 +86,7 @@ class SpeckleProvider(BaseProvider):
             import specklepy
 
         except ModuleNotFoundError:
-            from speckle_utils.patch_specklepy import patch_credentials, copy_gis_feature
+            from pygeoapi.provider.speckle_utils.patch_specklepy import patch_credentials, copy_gis_feature
 
             completed_process = run(
                 [
