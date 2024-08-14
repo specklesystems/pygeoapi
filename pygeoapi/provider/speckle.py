@@ -413,7 +413,12 @@ class SpeckleProvider(BaseProvider):
             message="Received commit in pygeoapi",
         )
         print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
-        return self.traverse_data(commit_obj)
+
+        speckle_data = self.traverse_data(commit_obj)
+        speckle_data["project"] = stream['name']
+        speckle_data["model"] = branch['name']
+
+        return speckle_data
 
     def traverse_data(self, commit_obj):
 

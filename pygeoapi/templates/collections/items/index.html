@@ -8,34 +8,36 @@
 {% endblock %}
 
 {% block body %}
+
+    
   <section id="collection">
     <div class="row">
       <p>{{ data['missing_url'] }} <a href = "{{ data['missing_url_href'] }}/">{{ data['missing_url_href'] }}</a></p>
     </div>
 
-    
-    <div class="row">
-      <p>{% trans %}If Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
-    </div>
+  <div class="row">
+    <div id="items-map"></div>
+  </div>
 
     <div class="row">
       <p> </p>
     </div>
+    <div class="row">
+      <p>{% trans %}If Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
+    
+      <p>{% trans %}Available Model Coordinate Reference System:  {% endtrans %} {{ data['model_crs'] }}</p>
+    </div>
+
     
   </section>
   <section id="items">
     {% if data['features'] %}
-    <div class="row">
-      <div id="items-map"></div>
-    </div>
     
     <div class="row">
       <p> </p>
     </div>
 
-    <div class="row">
-      <p>{% trans %}Available Model Coordinate Reference System:  {% endtrans %} {{ data['model_crs'] }}</p>
-    </div>
+    <div class="row"></div>
     
     <div class="row">
       <div style="overflow-x: scroll;">
