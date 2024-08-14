@@ -66,10 +66,14 @@
   </div>
 
   <main style="background-color:WhiteSmoke;">
+    <div style="margin-left: 20px;margin-right: 20px;">
+    {% block body_map %}
+    {% endblock %}
+    </div>
+
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <br/>
           {% block body %}
           {% endblock %}
         </div>

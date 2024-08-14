@@ -7,17 +7,21 @@
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
 {% endblock %}
 
+{% block body_map %}
+
+  <div class="row">
+    <div id="items-map" style="min-height: 600px;"></div>
+  </div>
+
+{% endblock %}
+
 {% block body %}
 
-    
   <section id="collection">
     <div class="row">
       <p>{{ data['missing_url'] }} <a href = "{{ data['missing_url_href'] }}/">{{ data['missing_url_href'] }}</a></p>
     </div>
 
-  <div class="row">
-    <div id="items-map"></div>
-  </div>
 
     <div class="row">
       <p> </p>
