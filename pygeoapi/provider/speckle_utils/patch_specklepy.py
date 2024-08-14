@@ -70,5 +70,29 @@ def patch_transport():
         file.writelines(lines)
     file.close()
     
+def complete_transport():
+    """Patches the installer with the correct connector version and specklepy version"""
+    
+    file_path = get_transport_path()
+
+    with open(file_path, "r") as file:
+        lines = file.readlines()
+    file.close()
+
+    print(len(lines))
+    if len(lines) < 184:
+        return False
+    return True
+    
 def copy_gis_feature():
     shutil.copyfile(get_gis_feature_path_src(), get_gis_feature_path_dst())
+
+def patch_specklepy():
+
+    if complete_transport():
+        return
+    
+    patch_credentials()
+    copy_gis_feature()
+    patch_transport()
+    
