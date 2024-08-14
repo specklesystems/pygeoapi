@@ -15,57 +15,7 @@
 
     
     <div class="row">
-      
-        <p>{% trans %}If Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
-        <p>{% trans %}Available Model Coordinate Reference System:  {% endtrans %} {{ data['model_crs'] }}</p>
-      </div>
-
-      <div class="row">
-        <div style="overflow-x: scroll;">
-          <table class="table table-bordered">
-
-            <thead>
-
-              <tr>
-                <th scope="column">URL parameters</th>
-                <th></th>
-              </tr>
-
-            </thead>
-            <tbody>
-
-                <tr>
-                  <td >Speckle URL ('speckleurl')</td>
-                    <td>
-                      <a href="{{ data['speckle_url'] }}">
-                        {{ data['speckle_url'] }}
-                      </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td >Coordinate Reference System ID ('crsauthid')</td>
-                  <td>{{ data['crs_authid'] }}</td>
-                </tr>
-                <tr>
-                  <td>Latitide ('lat')</td>
-                  <td>{{ data['lat'] }}</td>
-                </tr>
-                <tr>
-                  <td>Longitude ('lon')</td>
-                  <td>{{ data['lon'] }}</td>
-                </tr>
-                <tr>
-                  <td >Angle to True North, in degrees ('northdegrees')</td>
-                  <td>{{ data['north_degrees'] }}</td>
-                </tr>
-                <tr>
-                  <td >Feature limit ('limit')</td>
-                  <td>{{ data['limit'] }}</td>
-                </tr>
-
-            </tbody>
-            </table>
-        </div>
+      <p>{% trans %}If Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
     </div>
 
     <div class="row">
@@ -82,7 +32,64 @@
     <div class="row">
       <p> </p>
     </div>
+
+    <div class="row">
+      <p>{% trans %}Available Model Coordinate Reference System:  {% endtrans %} {{ data['model_crs'] }}</p>
+    </div>
     
+    <div class="row">
+      <div style="overflow-x: scroll;">
+        <table class="table table-bordered">
+
+          <thead>
+
+            <tr>
+              <th scope="column">URL parameters</th>
+              <th></th>
+            </tr>
+
+          </thead>
+          <tbody>
+
+              <tr>
+                <td >Speckle URL ('speckleurl')</td>
+                  <td>
+                    <a href="{{ data['speckle_url'] }}">
+                      {{ data['speckle_url'] }}
+                    </a>
+                </td>
+              </tr>
+              <tr>
+                <td >Coordinate Reference System ID ('crsauthid')</td>
+                <td>{{ data['crs_authid'] }}</td>
+              </tr>
+              <tr>
+                <td>Latitide ('lat')</td>
+                <td>{{ data['lat'] }}</td>
+              </tr>
+              <tr>
+                <td>Longitude ('lon')</td>
+                <td>{{ data['lon'] }}</td>
+              </tr>
+              <tr>
+                <td >Angle to True North, in degrees ('northdegrees')</td>
+                <td>{{ data['north_degrees'] }}</td>
+              </tr>
+              <tr>
+                <td >Feature limit ('limit')</td>
+                <td>{{ data['limit'] }}</td>
+              </tr>
+
+          </tbody>
+          </table>
+      </div>
+    </div>
+    
+    <div class="row">
+      <p> </p>
+    </div>
+    
+
     <div class="row">
       <div style="overflow-x: scroll;">
         {% set props = [] %}
