@@ -10,7 +10,7 @@
 {% block body_map %}
 
   <div class="row">
-    <div id="items-map" style="min-height: 600px;"></div>
+    <div id="items-map" style="min-height: 80vh;"></div>
   </div>
 
 {% endblock %}
@@ -210,6 +210,8 @@
     //map.addLayer(lines);
 
     map.fitBounds(group.getBounds());
+    map.setZoom(19); // in order for the tiles to load
+
     </script>
 {% endif %}
 {% endblock %}
