@@ -10,26 +10,26 @@
 {% block body_map %}
 
   <div class="row">
+    {% if not data['missing_url'] %}
     <div id="items-map" style="min-height: 80vh;"></div>
+    {% endif %}
   </div>
 
 {% endblock %}
 
 {% block body %}
 
-<div class="row">
-  <p> </p>
-</div>
-
   <section id="description">
-    <div class="row">
-      <p>{{ data['missing_url'] }} <a href = "{{ data['missing_url_href'] }}/">{{ data['missing_url_href'] }}</a></p>
-    </div>
-
-
     <div class="row">
       <p> </p>
     </div>
+
+    {% if data['missing_url'] %}
+    <div  style="height: fit-content;">
+      <p>{{ data['missing_url'] }} <a href = "{{ data['missing_url_href'] }}/">{{ data['missing_url_href'] }}</a></p>
+    </div>
+    {% endif %}
+
     <div class="row">
       <p>Description How To</p>
     </div>
@@ -163,7 +163,7 @@
                 {% elif data.get('title_field') %}
                   {% set title_field = data.title_field %}
                   <td data-label="{{ title_field }}">
-                    <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id}}">
+                    <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id}}" target="_blank">
                       {{ ft.properties.get(title_field) | string | truncate( 35 ) }}
                     </a>
                   </td>
@@ -219,7 +219,7 @@
         },
         onEachFeature: function (feature, layer) {
             var url = '{{ data['speckle_project_url'] }}/models/' + feature.id
-            var html = '<span><a href="' + url + '">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
+            var html = '<span><a href="' + url + '" target="_blank">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
             layer.bindPopup(html);
 
             var myFillColor = feature.displayProperties['color'];
