@@ -83,7 +83,6 @@ def complete_transport():
         lines = file.readlines()
     file.close()
 
-    print(len(lines))
     if len(lines) < 184:
         return False
     return True

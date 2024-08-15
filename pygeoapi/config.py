@@ -56,7 +56,10 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
 
     if not os.environ.get("PYGEOAPI_CONFIG"):
         raise RuntimeError("PYGEOAPI_CONFIG environment variable not set")
-
+    
+    map_api_key_local = os.environ.get("MAPTILER_KEY_LOCAL")
+    map_api_key_speckle = os.environ.get("MAPTILER_KEY_SPECKLE")
+    
     global CONFIG
 
     config_file = os.environ.get("PYGEOAPI_CONFIG")
@@ -73,6 +76,19 @@ def get_config(raw: bool = False, request: Request = None) -> dict:
     if CONFIG == {}:
         CONFIG = config_yaml
 
+    # if a key found, replace basemap URL to MapTiler
+    # make sure to restrict the usage for the key
+    if map_api_key_speckle and len(map_api_key_speckle)>=20:
+        CONFIG["server"]["map"]["url"] = r'https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png' + f'?key={map_api_key_speckle}'
+        CONFIG["server"]["map"]["attribution"] = r'<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+
+    elif map_api_key_local and len(map_api_key_local)>=20:
+        CONFIG["server"]["map"]["url"] = r'https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png' + f'?key={map_api_key_local}'
+        CONFIG["server"]["map"]["attribution"] = r'<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+    else:
+        CONFIG["server"]["map"]["url"] = r'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+        CONFIG["server"]["map"]["attribution"] = r'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+    
     url_valid = False
     speckle_url = ""
     if request is not None:
