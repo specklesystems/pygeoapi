@@ -51,79 +51,81 @@
       <p>{% trans %}Note: if Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
     </div>
 
-    <div class="row">
-      <h3>{% trans %}Speckle model data  {% endtrans %}</h3>      
-      <div style="overflow-x: scroll;">
-        <table class="table table-bordered">
-          <thead>
-          </thead>
-          <tbody>
+    <div class="col-md-6 col-sm-12">
+      <div class="row">
+        <h3>{% trans %}Speckle model data  {% endtrans %}</h3>      
+        <div style="overflow-x: scroll;">
+          <table class="table table-bordered">
+            <thead>
+            </thead>
+            <tbody>
 
-              <tr>
-                <td >Coordinate Reference System:</td>
-                <td>{{ data['model_crs'] }}</td>
-              </tr>
+                <tr>
+                  <td >Coordinate Reference System:</td>
+                  <td>{{ data['model_crs'] }}</td>
+                </tr>
 
-          </tbody>
-          </table>
+            </tbody>
+            </table>
+        </div>
       </div>
-
-      
     </div>
     
     <div class="row">
       <p> </p>
     </div>
-    
-    <div class="row">
-      <h3>{% trans %}URL parameters  {% endtrans %}</h3>
-      <div style="overflow-x: scroll;">
-        <table class="table table-bordered">
-          <thead>
-          </thead>
-          <tbody>
 
-              <tr>
-                <td >Speckle URL ('speckleurl')</td>
-                  <td>
-                    <a href="{{ data['speckle_url'] }}">
-                      {{ data['speckle_url'] }}
-                    </a>
-                </td>
-              </tr>
-              <tr>
-                <td >Coordinate Reference System ID ('crsauthid')</td>
-                <td>{{ data['crs_authid'] }}</td>
-              </tr>
-              <tr>
-                <td>Latitide ('lat')</td>
-                <td>{{ data['lat'] }}</td>
-              </tr>
-              <tr>
-                <td>Longitude ('lon')</td>
-                <td>{{ data['lon'] }}</td>
-              </tr>
-              <tr>
-                <td >Angle to True North, in degrees ('northdegrees')</td>
-                <td>{{ data['north_degrees'] }}</td>
-              </tr>
-              <tr>
-                <td >Feature limit ('limit')</td>
-                <td>{{ data['limit'] }}</td>
-              </tr>
+    <div class="col-md-6 col-sm-12">
+      <div class="row">
+        <h3>{% trans %}URL parameters  {% endtrans %}</h3>
+        <div style="overflow-x: scroll;">
+          <table class="table table-bordered">
+            <thead>
+            </thead>
+            <tbody>
 
-          </tbody>
-          </table>
+                <tr>
+                  <td >Speckle URL ('speckleurl')</td>
+                    <td>
+                      <a href="{{ data['speckle_url'] }}">
+                        {{ data['speckle_url'] }}
+                      </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td >Coordinate Reference System ID ('crsauthid')</td>
+                  <td>{{ data['crs_authid'] }}</td>
+                </tr>
+                <tr>
+                  <td>Latitide ('lat')</td>
+                  <td>{{ data['lat'] }}</td>
+                </tr>
+                <tr>
+                  <td>Longitude ('lon')</td>
+                  <td>{{ data['lon'] }}</td>
+                </tr>
+                <tr>
+                  <td >Angle to True North, in degrees ('northdegrees')</td>
+                  <td>{{ data['north_degrees'] }}</td>
+                </tr>
+                <tr>
+                  <td >Feature limit ('limit')</td>
+                  <td>{{ data['limit'] }}</td>
+                </tr>
+
+            </tbody>
+            </table>
+        </div>
       </div>
     </div>
   
   </section>
+
   <section id="items">
 
     <div class="row">
       <p> </p>
     </div>
-    
 
     <div class="row">
       <h3>{% trans %}Features in this model {% endtrans %}</h3>    
