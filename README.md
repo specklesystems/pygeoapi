@@ -11,37 +11,25 @@ Please read the docs at [https://docs.pygeoapi.io](https://docs.pygeoapi.io) for
 
 ## Speckle plugin
 
-First use:
+Launch:
 ```python
-python -m venv pygeoapi
-pygeoapi\Scripts\activate
+// python -m venv pygeoapi_venv
+cd pygeoapi_venv
+Scripts\activate
 cd pygeoapi
-git clone https://github.com/specklesystems/pygeoapi.git
+// git clone https://github.com/specklesystems/pygeoapi
 cd pygeoapi
 git checkout dev
-pip install --upgrade pip
-pip install -r requirements.txt
+git reset --hard dev
+// pip install --upgrade pip
+// pip install -r requirements.txt
 python setup.py install
-set PYGEOAPI_CONFIG=example-config.yml
-set PYGEOAPI_OPENAPI=example-config.yml
+set PYGEOAPI_CONFIG=example-config.yml // export
+set PYGEOAPI_OPENAPI=example-config.yml // export
 pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 pygeoapi serve
-curl http://localhost:5000
 ```
 
-Repeated use:
-```python
-cd C:\Users\yourusername
-pygeoapi\Scripts\activate
-cd pygeoapi
-cd pygeoapi
-git pull
-git checkout dev
-set PYGEOAPI_CONFIG=example-config.yml
-set PYGEOAPI_OPENAPI=example-config.yml
-pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
-pygeoapi serve
-```
 Example URL:
 http://localhost:5000/?limit=10000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
 
