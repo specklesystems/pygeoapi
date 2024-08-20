@@ -525,7 +525,8 @@ class SpeckleProvider(BaseProvider):
         all_coord_counts = []
 
         print(f"Loading..")
-        
+        all_props = []
+
         for item in context_list:
             
             # for GIS-commits, use default blue color
@@ -563,6 +564,10 @@ class SpeckleProvider(BaseProvider):
                 all_coord_counts.append(coord_counts)
 
                 self.assign_props(f_base, feature["properties"])
+                # update list of all properties
+                for prop in feature["properties"]:
+                    if prop not in all_props:
+                        all_props.append(prop)
 
                 feature["displayProperties"] = {}
                 self.assign_color(obj_display, feature["displayProperties"])
@@ -582,6 +587,12 @@ class SpeckleProvider(BaseProvider):
                     feature["displayProperties"]["radius"] = 10
 
                 data["features"].append(feature)
+        
+        # assign all props to all features
+        for feat in data["features"]:
+            for prop in all_props:
+                if prop not in list(feat["properties"].keys()):
+                    feat["properties"][prop] = "N/A"
 
         if len(all_coords)==0:
             raise ValueError("No supported features found")
