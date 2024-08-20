@@ -42,6 +42,7 @@ from pygeoapi.util import crs_transform
 
 
 LOGGER = logging.getLogger(__name__)
+DEFAULT_COLOR = (255 << 24) + (150 << 16) + (150 << 8) + 150
 _user_data_env_var = "SPECKLE_USERDATA_PATH"
 _application_name = "Speckle"
 _host_application = "pygeoapi"
@@ -120,6 +121,9 @@ class SpeckleProvider(BaseProvider):
         patch_specklepy()
         
         # assign global values
+        global DEFAULT_COLOR
+        DEFAULT_COLOR = (255 << 24) + (150 << 16) + (150 << 8) + 150
+
         self.url: str = self.data # to store the value and check if self.data has changed
         self.speckle_url = self.url.lower().split("speckleurl=")[-1].split("&")[0].split("@")[0].split("?")[0]
 
@@ -421,6 +425,7 @@ class SpeckleProvider(BaseProvider):
         from specklepy.objects.geometry import Base
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
         from specklepy.objects.GIS.CRS import CRS
+        from specklepy.objects.GIS.layers import VectorLayer
         from specklepy.objects.GIS.geometry import GisPolygonElement
         from specklepy.objects.GIS.GisFeature import GisFeature
         from specklepy.objects.graph_traversal.traversal import (
@@ -453,7 +458,7 @@ class SpeckleProvider(BaseProvider):
                 item
                 for item in x.get_member_names()
                 if isinstance(getattr(x, item, None), list)
-                and x.speckle_type.split(":")[-1] not in supported_types
+                and (x.speckle_type.split(":")[-1] not in supported_types or isinstance(x, VectorLayer))
             ],
         )
         context_list = [x for x in GraphTraversal([rule]).traverse(commit_obj)]
@@ -481,6 +486,7 @@ class SpeckleProvider(BaseProvider):
                         data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "
                     else:
                         data["model_crs"] = f"{self.crs.to_proj4()}"
+
                     break
                 elif displayUnits is None and type(item) in supported_types:
                     displayUnits = item.units
@@ -510,21 +516,27 @@ class SpeckleProvider(BaseProvider):
         self.create_crs_dict(offset_x, offset_y, displayUnits)
 
         # iterate to get features
-        list_len = len(context_list)
-
-        load = 0
-        print(f"{load}% loaded")
+        #list_len = len(context_list)
+        #load = 0
+        #print(f"{load}% loaded")
 
         # get coordinates in bulk
         all_coords = []
         all_coord_counts = []
 
-        for i, item in enumerate(context_list):
-            new_load = round(i / list_len * 10, 1) * 10
+        print(f"Loading..")
+        
+        for item in context_list:
+            
+            # for GIS-commits, use default blue color
+            if isinstance(item.current, VectorLayer):
+                global DEFAULT_COLOR
+                DEFAULT_COLOR = (255 << 24) + (10 << 16) + (132 << 8) + 255
 
-            if new_load % 10 == 0 and new_load != load:
-                load = round(i / list_len * 100)
-                print(f"{load}% loaded")
+            #new_load = round(i / list_len * 10, 1) * 10
+            #if new_load % 10 == 0 and new_load != load:
+            #    load = round(i / list_len * 100)
+            #    print(f"{load}% loaded")
 
             f_base = item.current
             f_id = item.current.id
@@ -726,8 +738,9 @@ class SpeckleProvider(BaseProvider):
 
                 count += pt_count + 1
 
-        elif isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
-            
+        elif f_base.speckle_type.endswith(".GisFeature") and len(f_base["geometry"]) > 0: # isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
+            # GisFeature doesn't deserialize properly, need to check for speckle_type 
+
             if isinstance(f_base.geometry[0], Point):
                 geometry["type"] = "MultiPoint"
                 coord_counts.append(None)
@@ -974,7 +987,7 @@ class SpeckleProvider(BaseProvider):
         from specklepy.objects.geometry import Mesh
 
         # initialize Speckle Blue color
-        color = (255 << 24) + (10 << 16) + (132 << 8) + 255
+        color = DEFAULT_COLOR
 
         try:
             if hasattr(obj_display, 'renderMaterial'):
