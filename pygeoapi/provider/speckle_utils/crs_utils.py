@@ -1,4 +1,7 @@
 
+from typing import Dict, List
+
+
 def create_crs_from_wkt(self: "SpeckleProvider", wkt: str | None) -> None:
     """Create and assign CRS object from WKT string."""
 
@@ -25,7 +28,7 @@ def create_crs_default(self: "SpeckleProvider") -> None:
     self.crs = crs_obj
     
 def create_crs_dict(self: "SpeckleProvider", offset_x, offset_y, displayUnits: str | None) -> None:
-    """Create and assign CRS object from WKT string."""
+    """Create and assign CRS_dict of SpeckleProvider."""
 
     if self.crs is not None:
         self.crs_dict = {
@@ -37,3 +40,62 @@ def create_crs_dict(self: "SpeckleProvider", offset_x, offset_y, displayUnits: s
             "obj": self.crs,
         }
 
+
+def get_set_crs_settings(self: "SpeckleProvider", commit_obj: "Base", context_list: List["TraversalContext"], data: Dict) -> None:
+    """Assign CRS object and Dict to SpeckleProvider."""
+
+    from pygeoapi.provider.speckle_utils.display_utils import get_display_units
+    from specklepy.objects.GIS.CRS import CRS
+    
+    assign_coordinate_system_to_geojson(data)
+
+    root_objects = []
+    try:
+        root_objects = [commit_obj] + commit_obj.elements
+    except AttributeError as ex:
+        pass # old commit structure
+
+    # iterate Speckle objects to get CRS, DisplayUnits, offsets, rotation
+    crs = None
+    displayUnits = None
+    offset_x = 0
+    offset_y = 0
+
+    for item in root_objects:
+        if (
+            crs is None
+            and hasattr(item, "crs")
+            and isinstance(item["crs"], CRS)
+        ):
+            crs = item["crs"]
+            displayUnits = crs["units_native"]
+            offset_x = crs["offset_x"]
+            offset_y = crs["offset_y"]
+            self.north_degrees = crs["rotation"]
+            create_crs_from_wkt(self, crs["wkt"])
+
+            if self.crs.to_authority() is not None:
+                data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "
+            else:
+                data["model_crs"] = f"{self.crs.to_proj4()}"
+            break
+
+    # if CRS not found, create default one and get model units for scaling
+    if self.crs is None:
+        create_crs_default(self)
+    if displayUnits is None:
+        displayUnits = get_display_units(context_list)
+
+    create_crs_dict(self, offset_x, offset_y, displayUnits)
+
+
+
+def assign_coordinate_system_to_geojson(data: Dict):
+
+    crs = {
+        "crs": {
+            "type": "name",
+            "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"},
+        }
+    }
+    data["crs"] = crs

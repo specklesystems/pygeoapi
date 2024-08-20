@@ -51,7 +51,6 @@ def find_display_obj(obj) -> Tuple["Base", "Base"]:
         displayValForColor = mesh
     
     displayVal = displayValForColor
-    print(displayValForColor)
 
     # if not searching for colored object, return GisFeatures as is
     if obj.speckle_type.endswith(".GisFeature"):

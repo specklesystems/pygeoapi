@@ -346,8 +346,11 @@ class SpeckleProvider(BaseProvider):
     def __repr__(self):
         return f"<SpeckleProvider> {self.data}"
 
-    def load_speckle_data(self: str):
-        
+    def load_speckle_data(self: str) -> Dict:
+        """Receive and process Speckle data, return geojson."""
+
+        from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client
+
         from specklepy.logging.exceptions import SpeckleException
         from specklepy.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
@@ -364,22 +367,9 @@ class SpeckleProvider(BaseProvider):
         # set actual branch
         wrapper.model_id = self.speckle_url.split("models/")[1].split("/")[0].split("&")[0]
         
-        # get client by URL, no authentication
-        client = SpeckleClient(host=wrapper.host, use_ssl=wrapper.host.startswith("https"))
-        client.account.serverInfo.url = url_proj.split("/projects")[0]
-
-        # get branch data
-        stream = client.stream.get(
-            id = wrapper.stream_id, branch_limit=100
-        )
-
-        if isinstance(stream, Exception):
-            raise SpeckleException(stream.message+ ", "+ self.speckle_url)
-
-        for br in stream['branches']['items']:
-            if br['id'] == wrapper.model_id:
-                branch = br
-                break
+        # get stream and branch data
+        client = get_client(wrapper, url_proj)
+        stream, branch = get_stream_branch(self, client, wrapper)
 
         # set the Model name
         self.model_name = branch['name']
@@ -391,7 +381,7 @@ class SpeckleProvider(BaseProvider):
         if transport == None:
             raise SpeckleException("Transport not found")
 
-        # data transfer
+        # receive commit
         try:
             commit_obj = operations.receive(objId, transport, None)
         except Exception as ex:
@@ -404,18 +394,19 @@ class SpeckleProvider(BaseProvider):
             source_application="pygeoapi",
             message="Received commit in pygeoapi",
         )
-        print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
 
+        print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
         speckle_data = self.traverse_data(commit_obj)
+
         speckle_data["project"] = stream['name']
         speckle_data["model"] = branch['name']
 
         return speckle_data
 
-    def traverse_data(self, commit_obj):
+    def traverse_data(self, commit_obj) -> Dict:
+        """Traverse Speckle commit and return geojson with features."""
 
         from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
-        from specklepy.objects.GIS.CRS import CRS
         from specklepy.objects.GIS.layers import VectorLayer
         from specklepy.objects.GIS.geometry import GisPolygonElement
         from specklepy.objects.GIS.GisFeature import GisFeature
@@ -423,11 +414,9 @@ class SpeckleProvider(BaseProvider):
             GraphTraversal,
             TraversalRule,
         )
-        from pygeoapi.provider.speckle_utils.crs_utils import create_crs_from_wkt, create_crs_default, create_crs_dict
-        from pygeoapi.provider.speckle_utils.coords_utils import reproject_bulk
-        from pygeoapi.provider.speckle_utils.props_utils import assign_props, assign_missing_props
-        from pygeoapi.provider.speckle_utils.converter_utils import assign_geometry
-        from pygeoapi.provider.speckle_utils.display_utils import find_display_obj, set_default_color, assign_display_properties, get_display_units
+        from pygeoapi.provider.speckle_utils.crs_utils import get_set_crs_settings
+        from pygeoapi.provider.speckle_utils.feature_utils import create_features
+        from pygeoapi.provider.speckle_utils.display_utils import set_default_color
 
         supported_classes = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
         supported_types = [y().speckle_type for y in supported_classes]
@@ -447,7 +436,6 @@ class SpeckleProvider(BaseProvider):
             "features": [],
             "model_crs": "-",
         }
-        self.assign_coordinate_system_to_geojson(data)
         rule = TraversalRule(
             [lambda _: True],
             lambda x: [
@@ -459,111 +447,15 @@ class SpeckleProvider(BaseProvider):
         )
         context_list = [x for x in GraphTraversal([rule]).traverse(commit_obj)]
 
-        # iterate Speckle objects to get CRS, DisplayUnits, offsets, rotation
-        crs = None
-        displayUnits = None
-        offset_x = 0
-        offset_y = 0
-        try:
-            for item in [commit_obj] + commit_obj.elements:
-                if (
-                    crs is None
-                    and hasattr(item, "crs")
-                    and isinstance(item["crs"], CRS)
-                ):
-                    crs = item["crs"]
-                    displayUnits = crs["units_native"]
-                    offset_x = crs["offset_x"]
-                    offset_y = crs["offset_y"]
-                    self.north_degrees = crs["rotation"]
-                    create_crs_from_wkt(self, crs["wkt"])
-
-                    if self.crs.to_authority() is not None:
-                        data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "
-                    else:
-                        data["model_crs"] = f"{self.crs.to_proj4()}"
-
-                    break
-        except AttributeError as ex:
-            pass # old commit structure
-
-        # if CRS not found, create default one and get model units for scaling
-        if self.crs is None:
-            create_crs_default(self)
-        # if displayUnits not found, get from displayable object
-        if displayUnits is None:
-            displayUnits = get_display_units(context_list)
-
-        create_crs_dict(self, offset_x, offset_y, displayUnits)
-
-        # get coordinates in bulk
-        all_coords = []
-        all_coord_counts = []
-
-
-        all_props = []
+        get_set_crs_settings(self, commit_obj, context_list, data)
         set_default_color(context_list)
-
-        print(f"Loading features..")
-        time1 = datetime.now()
-        for item in context_list:
-            
-            f_base = item.current
-            f_id = item.current.id
-            f_fid = len(data["features"]) + 1
-
-            # initialize feature
-            feature: Dict = {
-                "type": "Feature",
-                # "bbox": [-180.0, -90.0, 180.0, 90.0],
-                "geometry": {},
-                "properties": {
-                    "id": f_id,
-                    "FID": f_fid,
-                    "speckle_type": item.current.speckle_type.split(":")[-1],
-                },
-            }
-
-            # feature geometry, props and displayProps
-            obj_display, obj_get_color = find_display_obj(f_base)
-            coords, coord_counts = assign_geometry(feature, obj_display)
-            if len(coords)!=0:
-                all_coords.extend(coords)
-                all_coord_counts.append(coord_counts)
-
-                assign_props(f_base, feature["properties"])
-                # update list of all properties
-                for prop in feature["properties"]:
-                    if prop not in all_props:
-                        all_props.append(prop)
-
-                assign_display_properties(feature, f_base,  obj_get_color)
-                data["features"].append(feature)
-        
-        assign_missing_props(data["features"], all_props)
-
-        if len(data["features"])==0:
-            raise ValueError("No supported features found")
-        
-        time2 = datetime.now()
-        print(f"Loading features before reprojecting time: {(time2-time1).total_seconds()}")
-
-        reproject_bulk(self, all_coords, all_coord_counts, [f["geometry"] for f in data["features"]])
+        create_features(self, context_list, data)
 
         return data
     
-    def assign_coordinate_system_to_geojson(self, data: Dict):
+    def get_python_path(self) -> str:
+        """Get current Python executable path."""
 
-        crs = {
-            "crs": {
-                "type": "name",
-                "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"},
-            }
-        }
-
-        data["crs"] = crs
-
-    def get_python_path(self):
         if sys.platform.startswith("linux"):
             return sys.executable
         pythonExec = os.path.dirname(sys.executable)
