@@ -27,12 +27,12 @@ def get_transport_path():
     return str(credentials_path)
 
 def get_transport_path_src():
-    credentials_path = Path(get_pygeoapi_path(), "provider", "speckle_utils", "server.py")
+    credentials_path = Path(get_pygeoapi_path(), "provider", "speckle_utils", "patch", "server.py")
 
     return str(credentials_path)
 
 def get_gis_feature_path_src():
-    credentials_path = Path(get_pygeoapi_path(), "provider", "speckle_utils", "GisFeature.py")
+    credentials_path = Path(get_pygeoapi_path(), "provider", "speckle_utils", "patch", "GisFeature.py")
 
     return str(credentials_path)
 
