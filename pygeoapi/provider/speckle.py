@@ -434,7 +434,7 @@ class SpeckleProvider(BaseProvider):
             "Objects.Other.Revit.RevitInstance", 
             "Objects.BuiltElements.Revit.RevitWall", 
             "Objects.BuiltElements.Revit.RevitFloor", 
-            "Objects.BuiltElements.Revit.RevitStairs",
+            "Objects.BuiltElements.Revit.RevitStair",
             "Objects.BuiltElements.Revit.RevitColumn",
             "Objects.BuiltElements.Revit.RevitBeam",
             "Objects.BuiltElements.Revit.RevitElement",

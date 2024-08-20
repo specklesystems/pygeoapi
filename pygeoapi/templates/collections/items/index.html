@@ -221,7 +221,7 @@
         },
         onEachFeature: function (feature, layer) {
             var url = '{{ data['speckle_project_url'] }}/models/' + feature.id
-            var html = '<span><a href="' + url + '" target="_blank">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
+            var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td><a href="' + url + '" target="_blank">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
             layer.bindPopup(html);
 
             var myFillColor = feature.displayProperties['color'];
