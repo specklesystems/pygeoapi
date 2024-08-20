@@ -463,26 +463,29 @@ class SpeckleProvider(BaseProvider):
         displayUnits = None
         offset_x = 0
         offset_y = 0
-        for item in [commit_obj] + commit_obj.elements:
-            if (
-                crs is None
-                and hasattr(item, "crs")
-                and isinstance(item["crs"], CRS)
-            ):
-                crs = item["crs"]
-                displayUnits = crs["units_native"]
-                offset_x = crs["offset_x"]
-                offset_y = crs["offset_y"]
-                self.north_degrees = crs["rotation"]
-                self.create_crs_from_wkt(crs["wkt"])
+        try:
+            for item in [commit_obj] + commit_obj.elements:
+                if (
+                    crs is None
+                    and hasattr(item, "crs")
+                    and isinstance(item["crs"], CRS)
+                ):
+                    crs = item["crs"]
+                    displayUnits = crs["units_native"]
+                    offset_x = crs["offset_x"]
+                    offset_y = crs["offset_y"]
+                    self.north_degrees = crs["rotation"]
+                    self.create_crs_from_wkt(crs["wkt"])
 
-                if self.crs.to_authority() is not None:
-                    data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "
-                else:
-                    data["model_crs"] = f"{self.crs.to_proj4()}"
-                break
-            elif displayUnits is None and type(item) in supported_types:
-                displayUnits = item.units
+                    if self.crs.to_authority() is not None:
+                        data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "
+                    else:
+                        data["model_crs"] = f"{self.crs.to_proj4()}"
+                    break
+                elif displayUnits is None and type(item) in supported_types:
+                    displayUnits = item.units
+        except AttributeError as ex:
+            pass # old commit structure
 
         # if CRS not found, create default one and get model units for scaling
         if self.crs is None:
@@ -890,22 +893,18 @@ class SpeckleProvider(BaseProvider):
             return 
         
         # if Rhino: 
-        elif "userStrings" in dynamic_prop_names and isinstance(value, Base):
+        elif "userStrings" in dynamic_prop_names and isinstance(obj["userStrings"], Base):
             all_prop_names = obj["userStrings"].get_dynamic_member_names()
             for prop_name in all_prop_names:
-                value = getattr(obj["userStrings"], prop_name)
 
-                if (prop_name
-                    in [
-                        "id",
-                    ]
-                ):
-                    pass
+                if prop_name in ["id"]:
+                    continue
+
+                value = getattr(obj["userStrings"], prop_name)
+                if not isinstance(value, str):
+                    props[prop_name] = str(value)
                 else:
-                    if not isinstance(value, str):
-                        props[prop_name] = str(value)
-                    else:
-                        props[prop_name] = value
+                    props[prop_name] = value
             return 
                 
         for prop_name in obj.get_dynamic_member_names():
@@ -934,14 +933,16 @@ class SpeckleProvider(BaseProvider):
         # if Revit: 
         if "parameters" in all_prop_names and isinstance(obj.parameters, Base):
             for prop_name in obj.parameters.get_dynamic_member_names():
+                if prop_name in ["id","revitLinkedModelPath"]:
+                    continue
+
                 param = getattr(obj.parameters, prop_name)
                 if isinstance(param, RevitParameter):
-
+                    
                     if not isinstance(param.value, str):
                         props[prop_name] = str(param.value)
                     else:
-                        if prop_name!= "revitLinkedModelPath":
-                            props[prop_name] = param.value
+                        props[prop_name] = param.value
             # add after dynamic parameters
 
     def find_display_obj(self, obj):
