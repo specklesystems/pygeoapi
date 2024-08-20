@@ -430,6 +430,15 @@ class SpeckleProvider(BaseProvider):
 
         supported_classes = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
         supported_types = [y().speckle_type for y in supported_classes]
+        supported_types.extend([
+            "Objects.Other.Revit.RevitInstance", 
+            "Objects.BuiltElements.Revit.RevitWall", 
+            "Objects.BuiltElements.Revit.RevitFloor", 
+            "Objects.BuiltElements.Revit.RevitStairs",
+            "Objects.BuiltElements.Revit.RevitColumn",
+            "Objects.BuiltElements.Revit.RevitBeam",
+            "Objects.BuiltElements.Revit.RevitElement",
+            "Objects.BuiltElements.Revit.RevitRebar"])
 
         # traverse commit
         data: Dict[str, Any] = {
@@ -526,12 +535,13 @@ class SpeckleProvider(BaseProvider):
                 "properties": {
                     "id": f_id,
                     "FID": f_fid,
-                    "speckle_type": item.current.speckle_type,
+                    "speckle_type": item.current.speckle_type.split(":")[-1],
                 },
             }
 
-            # feature geometry
-            coords, coord_counts = self.assign_geometry(feature, f_base)
+            # feature geometry 
+            obj_display = self.find_display_obj(f_base)
+            coords, coord_counts = self.assign_geometry(feature, obj_display)
 
             if len(coords)!=0:
                 all_coords.extend(coords)
@@ -540,7 +550,7 @@ class SpeckleProvider(BaseProvider):
                 self.assign_props(f_base, feature["properties"])
 
                 feature["displayProperties"] = {}
-                self.assign_color(f_base, feature["displayProperties"])
+                self.assign_color(obj_display, feature["displayProperties"])
 
                 # other properties for rendering 
                 if isinstance(f_base, Mesh) or isinstance(f_base, Brep):
@@ -847,13 +857,15 @@ class SpeckleProvider(BaseProvider):
 
     def assign_props(self, obj, props):
         from specklepy.objects.geometry import Base
+        from specklepy.objects.other import RevitParameter
 
         all_prop_names = obj.get_member_names()
+        dynamic_prop_names = obj.get_dynamic_member_names()
+        typed_prop_names = obj.get_typed_member_names()
 
         # check if GIS object
         if "attributes" in all_prop_names and isinstance(obj["attributes"], Base):
-            all_prop_names = obj["attributes"].get_member_names()
-
+            all_prop_names = obj["attributes"].get_dynamic_member_names()
             for prop_name in all_prop_names:
 
                 value = getattr(obj["attributes"], prop_name)
@@ -861,10 +873,6 @@ class SpeckleProvider(BaseProvider):
                 if (prop_name
                     in [
                         "geometry",
-                        "speckle_type",
-                        "totalChildrenCount",
-                        "units",
-                        "applicationId",
                         "Speckle_ID",
                         "id",
                     ]
@@ -881,44 +889,34 @@ class SpeckleProvider(BaseProvider):
                         props[prop_name] = value
             return 
         
-        # if not GIS: 
-        for prop_name in obj.get_member_names():
+        # if Rhino: 
+        elif "userStrings" in dynamic_prop_names and isinstance(value, Base):
+            all_prop_names = obj["userStrings"].get_dynamic_member_names()
+            for prop_name in all_prop_names:
+                value = getattr(obj["userStrings"], prop_name)
+
+                if (prop_name
+                    in [
+                        "id",
+                    ]
+                ):
+                    pass
+                else:
+                    if not isinstance(value, str):
+                        props[prop_name] = str(value)
+                    else:
+                        props[prop_name] = value
+            return 
+                
+        for prop_name in obj.get_dynamic_member_names():
             if (
                 prop_name
                 in [
-                    "x",
-                    "y",
-                    "z",
-                    "geometry",
-                    "speckle_type",
-                    "totalChildrenCount",
-                    "vertices",
-                    "faces",
-                    "colors",
-                    "bbox",
-                    "value",
-                    "domain",
                     "displayValue",
                     "displayStyle",
-                    "textureCoordinates",
                     "renderMaterial",
-                    "applicationId",
-                    "TrimsValue",
-                    "LoopsValue",
-                    "Faces",
-                    "VerticesValue",
-                    "EdgesValue",
-                    "Curve2DValues",
-                    "Vertices",
-                    "Loops",
-                    "Curve3D",
-                    "FacesValue",
-                    "SurfacesValue",
-                    "Edges",
-                    "Surfaces",
-                    "Curve3DValues",
-                    "Trims",
-                    "Curve2D",
+                    "revitLinkedModelPath",
+                    "id",
                 ]
             ):
                 pass
@@ -932,29 +930,50 @@ class SpeckleProvider(BaseProvider):
                     props[prop_name] = str(value)
                 else:
                     props[prop_name] = value
+        
+        # if Revit: 
+        if "parameters" in all_prop_names and isinstance(obj.parameters, Base):
+            for prop_name in obj.parameters.get_dynamic_member_names():
+                param = getattr(obj.parameters, prop_name)
+                if isinstance(param, RevitParameter):
+
+                    if not isinstance(param.value, str):
+                        props[prop_name] = str(param.value)
+                    else:
+                        if prop_name!= "revitLinkedModelPath":
+                            props[prop_name] = param.value
+            # add after dynamic parameters
 
     def find_display_obj(self, obj):
 
-        from specklepy.objects.geometry import Base
+        from specklepy.objects.geometry import Base, Mesh
+        displayVal = None
 
         if hasattr(obj, 'displayValue'):
-            displayVal = obj.displayValue
-            if isinstance(displayVal, List):
-                for item in displayVal:
-                    return item
-            
-            if isinstance(displayVal, Base):
-                return displayVal
+            displayVal = getattr(obj, 'displayValue')
+        elif hasattr(obj, '@displayValue'):
+            displayVal = getattr(obj, '@displayValue')
+
+        if isinstance(displayVal, Base):
+            return displayVal
+        elif isinstance(displayVal, List):
+            faces = []
+            verts = []
+            for item in displayVal:
+                #if isinstance(item, Mesh):
+                #    start_vert_count = len(verts)
+                #    verts.extend(item.vertices)
+                #    faces.extend(item.faces)
+                #else:
+                return item
+        
         return obj
 
-    def assign_color(self, obj, props):
-        from specklepy.objects.geometry import Base, Mesh
+    def assign_color(self, obj_display, props):
+        from specklepy.objects.geometry import Mesh
 
         # initialize Speckle Blue color
         color = (255 << 24) + (10 << 16) + (132 << 8) + 255
-
-        # find color property
-        obj_display = self.find_display_obj(obj)
 
         try:
             if hasattr(obj_display, 'renderMaterial'):
