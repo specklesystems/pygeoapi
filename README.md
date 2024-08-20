@@ -26,6 +26,7 @@ git reset --hard dev
 python setup.py install
 set PYGEOAPI_CONFIG=example-config.yml // export
 set PYGEOAPI_OPENAPI=example-config.yml // export
+set MAPTILER_KEY_LOCAL=your_api_key // export, (if available)
 pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 pygeoapi serve
 ```
