@@ -428,7 +428,9 @@ class SpeckleProvider(BaseProvider):
             TraversalRule,
         )
 
-        supported_types = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
+        supported_classes = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
+        supported_types = [y().speckle_type for y in supported_classes]
+
         # traverse commit
         data: Dict[str, Any] = {
             "type": "FeatureCollection",
@@ -436,14 +438,13 @@ class SpeckleProvider(BaseProvider):
             "model_crs": "-",
         }
         self.assign_crs_to_geojson(data)
-
         rule = TraversalRule(
             [lambda _: True],
             lambda x: [
                 item
                 for item in x.get_member_names()
                 if isinstance(getattr(x, item, None), list)
-                and type(x) not in supported_types
+                and x.speckle_type.split(":")[-1] not in supported_types
             ],
         )
         context_list = [x for x in GraphTraversal([rule]).traverse(commit_obj)]
