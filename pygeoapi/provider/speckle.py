@@ -984,13 +984,36 @@ class SpeckleProvider(BaseProvider):
         elif isinstance(displayVal, List):
             faces = []
             verts = []
+            colors = []
             for item in displayVal:
-                #if isinstance(item, Mesh):
-                #    start_vert_count = len(verts)
-                #    verts.extend(item.vertices)
-                #    faces.extend(item.faces)
-                #else:
-                return item
+                if isinstance(item, Mesh):
+                    start_vert_count = int(len(verts)/3)
+
+                    # only add colors if existing and incoming colors are valid (same length as vertices)
+                    if len(colors) == start_vert_count and isinstance(item.colors, List) and len(item.colors)== int(len(item.vertices)/3)>0:
+                        colors.extend(item.colors)
+                    else:
+                        colors = []
+
+                    verts.extend(item.vertices)
+
+                    count = 0
+                    for _ in item.faces:
+                        try:
+                            vert_num = item.faces[count]
+                            faces.append(vert_num)
+                            faces.extend([ x+start_vert_count for x in item.faces[count+1 : count+1+vert_num]])
+                            count += vert_num+1
+                        except IndexError:
+                            break
+                else:
+                    return item
+
+            mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
+            for prop in displayVal[0].get_member_names():
+                if prop not in ["colors", "vertices", "faces"]:
+                    mesh[prop] = getattr(displayVal[0], prop)
+            return mesh
         
         return obj
 
