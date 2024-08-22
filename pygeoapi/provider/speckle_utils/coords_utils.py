@@ -76,7 +76,8 @@ def reproject_2d_coords_list(self, coords_in: List[List[float]]) -> List[List[fl
         CRS.from_user_input(4326),
         always_xy=True,
     )
-    return [[pt[0], pt[1]] for pt in transformer.itransform(coords_offset)]
+    transformed = [[pt[0], pt[1], pt[2]] for pt in transformer.itransform(coords_offset)]
+    return transformed
 
 def offset_rotate(self, coords_in: List[list]) -> List[List[float]]:
     """Apply offset and rotation to coordinates, according to SpeckleProvider CRS_dict."""
@@ -96,6 +97,7 @@ def offset_rotate(self, coords_in: List[list]) -> List[List[float]]:
             [
                 scale_factor * (x2 + self.crs_dict["offset_x"]),
                 scale_factor * (y2 + self.crs_dict["offset_y"]),
+                scale_factor * (coord[2]),
             ]
         )
 

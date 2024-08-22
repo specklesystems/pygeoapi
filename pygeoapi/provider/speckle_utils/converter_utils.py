@@ -17,7 +17,7 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
         geometry["type"] = "MultiPoint"
         coord_counts.append(None)
 
-        coords.append([f_base.x, f_base.y])
+        coords.append([f_base.x, f_base.y, f_base.z])
         coord_counts.append([1])
 
     elif isinstance(f_base, Mesh) or isinstance(f_base, Brep):
@@ -58,7 +58,8 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
             for vertex_index in faces[count + 1 : count + 1 + pt_count]:
                 x = vertices[vertex_index * 3]
                 y = vertices[vertex_index * 3 + 1]
-                coords.append([x, y])
+                z = vertices[vertex_index * 3 + 2]
+                coords.append([x, y, z])
 
             count += pt_count + 1
 
@@ -70,7 +71,7 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
             coord_counts.append(None)
             
             for geom in f_base.geometry:
-                coords.append([geom.x, geom.y])
+                coords.append([geom.x, geom.y, geom.z])
                 coord_counts.append([1])
             
         elif isinstance(f_base.geometry[0], Polyline):
@@ -82,7 +83,7 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
                 local_poly_count = 0
 
                 for pt in geom.as_points():
-                    coords.append([pt.x, pt.y])
+                    coords.append([pt.x, pt.y, pt.z])
                     local_poly_count += 1
                 if len(coords)>2 and geom.closed is True and coords[0] != coords[-1]:
                     coords.append(coords[0])
@@ -98,7 +99,7 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
                 coord_counts.append([])
                 boundary_count = 0
                 for pt in polygon.boundary.as_points():
-                    coords.append([pt.x, pt.y])
+                    coords.append([pt.x, pt.y, pt.z])
                     boundary_count += 1
                 
                 coord_counts[-1].append(boundary_count)
@@ -106,15 +107,15 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
                 for void in polygon.voids:
                     void_count = 0
                     for pt_void in void.as_points():
-                        coords.append([pt_void.x, pt_void.y])
+                        coords.append([pt_void.x, pt_void.y, pt_void.z])
                         void_count += 1
                     
                     coord_counts[-1].append(void_count)
 
     elif isinstance(f_base, Line):
         geometry["type"] = "LineString"
-        start = [f_base.start.x, f_base.start.y]
-        end = [f_base.end.x, f_base.end.y]
+        start = [f_base.start.x, f_base.start.y, f_base.start.z]
+        end = [f_base.end.x, f_base.end.y, f_base.end.z]
         
         coords.extend([start, end])
         coord_counts.append([2])
@@ -122,7 +123,7 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
     elif isinstance(f_base, Polyline):
         geometry["type"] = "LineString"
         for pt in f_base.as_points():
-            coords.append([pt.x, pt.y])
+            coords.append([pt.x, pt.y, pt.z])
         if len(coords)>2 and f_base.closed is True and coords[0] != coords[-1]:
             coords.append(coords[0])
             
@@ -131,7 +132,7 @@ def assign_geometry(feature: Dict, f_base) -> ( List[List[List[float]]], List[Li
     elif isinstance(f_base, Curve):
         geometry["type"] = "LineString"
         for pt in f_base.displayValue.as_points():
-            coords.append([pt.x, pt.y])
+            coords.append([pt.x, pt.y, pt.z])
         if len(coords)>2 and f_base.displayValue.closed is True and coords[0] != coords[-1]:
             coords.append(coords[0])
 

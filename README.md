@@ -18,9 +18,8 @@ cd pygeoapi_venv
 Scripts\activate
 cd pygeoapi
 // git clone https://github.com/specklesystems/pygeoapi
-cd pygeoapi
 git checkout dev
-git reset --hard dev
+// git reset --hard dev
 // pip install --upgrade pip
 // pip install -r requirements.txt
 python setup.py install
