@@ -22,15 +22,17 @@ def convert_polyline(f_base: "Polyline", coords, coord_counts):
     """Convert Polyline."""
 
     coord_counts.append([])
+    local_coords = [] # to keep track of just the current polyline
     local_poly_count = 0
 
     for pt in f_base.as_points():
         coords.append([pt.x, pt.y, pt.z])
+        local_coords.append([pt.x, pt.y, pt.z])
         local_poly_count += 1
 
     # closing point
-    if local_poly_count>2 and f_base.closed is True and coords[0] != coords[-1]:
-        coords.append(coords[0])
+    if local_poly_count>2 and f_base.closed is True and local_coords[0] != local_coords[-1]:
+        coords.append(local_coords[0])
         local_poly_count += 1
     coord_counts[-1].append(local_poly_count)
  
@@ -222,13 +224,10 @@ def convert_hatch(hatch: "Base", coords, coord_counts):
     boundary = None
     voids = []
     for loop in loops:
-        print(loop)
-        print(loop.get_member_names())
-
-        if len(loops)==1 or loop["type"] == "Outer":
-            boundary = loop["curve"]
+        if len(loops)==1 or loop["Type"] == 1: # Outer
+            boundary = loop["Curve"]
         else:
-            voids.append(loop["curve"])
+            voids.append(loop["Curve"])
     if boundary is None:
         return 
 
