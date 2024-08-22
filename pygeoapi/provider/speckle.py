@@ -370,7 +370,7 @@ class SpeckleProvider(BaseProvider):
     def traverse_data(self, commit_obj) -> Dict:
         """Traverse Speckle commit and return geojson with features."""
 
-        from specklepy.objects.geometry import Point, Line, Polyline, Curve, Mesh, Brep
+        from specklepy.objects.geometry import Point, Line, Curve, Arc, Circle, Ellipse, Polyline, Polycurve, Mesh, Brep
         from specklepy.objects.GIS.layers import VectorLayer
         from specklepy.objects.GIS.geometry import GisPolygonElement
         from specklepy.objects.GIS.GisFeature import GisFeature
@@ -382,7 +382,7 @@ class SpeckleProvider(BaseProvider):
         from pygeoapi.provider.speckle_utils.feature_utils import create_features
         from pygeoapi.provider.speckle_utils.display_utils import set_default_color
 
-        supported_classes = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve]
+        supported_classes = [GisFeature, GisPolygonElement, Mesh, Brep, Point, Line, Polyline, Curve, Arc, Circle, Ellipse, Polycurve]
         supported_types = [y().speckle_type for y in supported_classes]
         supported_types.extend([
             "Objects.Other.Revit.RevitInstance", 

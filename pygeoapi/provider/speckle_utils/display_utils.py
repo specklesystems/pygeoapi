@@ -6,7 +6,7 @@ DEFAULT_COLOR = (255 << 24) + (150 << 16) + (150 << 8) + 150
 def find_display_obj(obj) -> Tuple["Base", "Base"]:
     """Get displayable object."""
 
-    from specklepy.objects.geometry import Base, Mesh
+    from specklepy.objects.geometry import Point, Line, Arc, Circle, Curve, Polycurve, Mesh, Brep
 
     displayVal = obj
     displayValForColor = obj
@@ -52,8 +52,20 @@ def find_display_obj(obj) -> Tuple["Base", "Base"]:
     
     displayVal = displayValForColor
 
-    # if not searching for colored object, return GisFeatures as is
-    if obj.speckle_type.endswith(".GisFeature"):
+    # keep reading color from GisFeature Meshes
+    if not obj.speckle_type.endswith("Feature"):
+        displayValForColor = obj
+
+    # return known types as is
+    if (obj.speckle_type.endswith("Feature") or
+    isinstance(obj, Point) or
+    isinstance(obj, Line) or
+    isinstance(obj, Arc) or
+    isinstance(obj, Circle) or
+    isinstance(obj, Curve) or
+    isinstance(obj, Polycurve) or
+    isinstance(obj, Mesh) or
+    isinstance(obj, Brep)):
         displayVal = obj
 
     return displayVal, displayValForColor
@@ -107,14 +119,14 @@ def assign_color(obj_display, props) -> None:
     color = DEFAULT_COLOR
 
     try:
-        if hasattr(obj_display, 'renderMaterial'):
-            color = obj_display['renderMaterial']['diffuse']
-        elif hasattr(obj_display, '@renderMaterial'):
-            color = obj_display['@renderMaterial']['diffuse']
-        elif hasattr(obj_display, 'displayStyle'):
+        if hasattr(obj_display, 'displayStyle'):
             color = obj_display['displayStyle']['color']
         elif hasattr(obj_display, '@displayStyle'):
             color = obj_display['@displayStyle']['color']
+        elif hasattr(obj_display, 'renderMaterial'):
+            color = obj_display['renderMaterial']['diffuse']
+        elif hasattr(obj_display, '@renderMaterial'):
+            color = obj_display['@renderMaterial']['diffuse']
         elif isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
             sameColors = True
             color1 = obj_display.colors[0]
