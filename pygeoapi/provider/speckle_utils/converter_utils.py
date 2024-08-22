@@ -177,6 +177,7 @@ def convert_mesh_or_brep(f_base: "Base", coords, coord_counts):
     
     # add coordinates
     count: int = 0
+    
     for i, pt_count in enumerate(faces):
         if i != count:
             continue
@@ -186,39 +187,54 @@ def convert_mesh_or_brep(f_base: "Base", coords, coord_counts):
             pt_count = 3
         elif pt_count == 1:
             pt_count = 4
-        coord_counts.append([pt_count])
 
+        local_coords_count = [pt_count]
+        local_coords = []
         for vertex_index in faces[count + 1 : count + 1 + pt_count]:
             x = vertices[vertex_index * 3]
             y = vertices[vertex_index * 3 + 1]
             z = vertices[vertex_index * 3 + 2]
-            coords.append([x, y, z])
+            #coords.append([x, y, z])
+            local_coords.append([x, y, z])
 
         count += pt_count + 1
+        valid: bool = fix_polygon_orientation(local_coords, True) 
+        if valid:
+            coords.extend(local_coords)
+            coord_counts.append(local_coords_count)
 
 def convert_polygon(polygon: "Base", coords, coord_counts):
     """Convert GisPolygonGeometry."""
     
     coord_counts.append([])
-    boundary_count = 0
     
+    local_coords_count = 0
+    local_coords = []
     for pt in polygon.boundary.as_points():
-        coords.append([pt.x, pt.y, pt.z])
-        boundary_count += 1
-    coord_counts[-1].append(boundary_count)
+        local_coords.append([pt.x, pt.y, pt.z])
+        local_coords_count += 1
+
+    valid: bool = fix_polygon_orientation(local_coords, True)
+    if valid:
+        coords.extend(local_coords)
+        coord_counts[-1].append(local_coords_count)
 
     for void in polygon.voids:
-        void_count = 0
+        local_coords_count = 0
+        local_coords = []
         for pt_void in void.as_points():
-            coords.append([pt_void.x, pt_void.y, pt_void.z])
-            void_count += 1
-        coord_counts[-1].append(void_count)
+            local_coords.append([pt_void.x, pt_void.y, pt_void.z])
+            local_coords_count += 1
+
+        valid: bool = fix_polygon_orientation(local_coords, False)
+        if valid:
+            coords.extend(local_coords)
+            coord_counts[-1].append(local_coords_count)
     
 def convert_hatch(hatch: "Base", coords, coord_counts):
     """Convert Hatch."""
     
     coord_counts.append([])
-    boundary_count = 0
 
     loops: list = hatch["loops"]
     boundary = None
@@ -232,9 +248,22 @@ def convert_hatch(hatch: "Base", coords, coord_counts):
         return 
 
     # record coordinates
-    convert_icurve(boundary, coords, coord_counts)
+    local_coords_count = []
+    local_coords = []
+    convert_icurve(boundary, local_coords, local_coords_count)
+    valid: bool = fix_polygon_orientation(local_coords, True)
+    if valid:
+        coords.extend(local_coords)
+        coord_counts.extend(local_coords_count)
+
     for void in voids:
-        convert_icurve(void, coords, coord_counts)
+        local_coords_count = []
+        local_coords = []
+        convert_icurve(void, local_coords, local_coords_count)
+        valid: bool = fix_polygon_orientation(local_coords, False)
+        if valid:
+            coords.extend(local_coords)
+            coord_counts.extend(local_coords_count)
 
     
 def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], List[List[None| List[int]]] ]:
@@ -381,7 +410,8 @@ def getArcAngles(poly: "Arc") -> Tuple[float | None]:
 
 def fix_polygon_orientation(
     polygon_pts: List[List[float]], clockwise: bool = True
-) -> List[List[float]]:
+) -> bool:
+    """Changes orientation to clockwise (or counter-) and returns False if polygon has no footprint."""
     
     max_number_of_points = 1000
     coef = int(len(polygon_pts)/max_number_of_points) if len(polygon_pts)>max_number_of_points else 1
@@ -399,10 +429,13 @@ def fix_polygon_orientation(
             sum_orientation += (pt2[0] - pt[0]) * (pt2[1] + pt[1])  # if Speckle Points
         except IndexError:
             break
-    if sum_orientation ==0:
-        print("No Orientation")
+
     if clockwise is True and sum_orientation < 0:
         polygon_pts.reverse()
     elif clockwise is False and sum_orientation > 0:
         polygon_pts.reverse()
-    return polygon_pts
+    
+    if sum_orientation ==0:
+        return False
+    return True
+
