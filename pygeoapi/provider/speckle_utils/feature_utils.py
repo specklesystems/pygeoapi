@@ -34,8 +34,11 @@ def initialize_features(all_coords, all_coord_counts, data, context_list) -> Non
         }
 
         # feature geometry, props and displayProps
-        obj_display, obj_get_color = find_display_obj(f_base)
-        coords, coord_counts = assign_geometry(feature, obj_display)
+        try: # don't break the code if 1 feature fails
+            obj_display, obj_get_color = find_display_obj(f_base)
+            coords, coord_counts = assign_geometry(feature, obj_display)
+        except:
+            pass
         if len(coords)!=0:
             all_coords.extend(coords)
             all_coord_counts.append(coord_counts)

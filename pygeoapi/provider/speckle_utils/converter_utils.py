@@ -378,3 +378,31 @@ def getArcAngles(poly: "Arc") -> Tuple[float | None]:
 
     return angle1, angle2
 
+
+def fix_polygon_orientation(
+    polygon_pts: List[List[float]], clockwise: bool = True
+) -> List[List[float]]:
+    
+    max_number_of_points = 1000
+    coef = int(len(polygon_pts)/max_number_of_points) if len(polygon_pts)>max_number_of_points else 1
+
+    sum_orientation = 0
+    for k, _ in enumerate(polygon_pts):
+        index = k + 1
+        if k == len(polygon_pts) - 1:
+            index = 0
+
+        try:
+            pt = polygon_pts[k * coef]
+            pt2 = polygon_pts[index * coef]
+
+            sum_orientation += (pt2[0] - pt[0]) * (pt2[1] + pt[1])  # if Speckle Points
+        except IndexError:
+            break
+    if sum_orientation ==0:
+        print("No Orientation")
+    if clockwise is True and sum_orientation < 0:
+        polygon_pts.reverse()
+    elif clockwise is False and sum_orientation > 0:
+        polygon_pts.reverse()
+    return polygon_pts
