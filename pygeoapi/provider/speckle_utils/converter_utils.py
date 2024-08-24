@@ -199,9 +199,9 @@ def convert_mesh_or_brep(f_base: "Base", coords, coord_counts):
 
         count += pt_count + 1
         valid: bool = fix_polygon_orientation(local_coords, True) 
-        if valid:
-            coords.extend(local_coords)
-            coord_counts.append(local_coords_count)
+        #if valid:
+        coords.extend(local_coords)
+        coord_counts.append(local_coords_count)
 
 def convert_polygon(polygon: "Base", coords, coord_counts):
     """Convert GisPolygonGeometry."""
@@ -215,9 +215,9 @@ def convert_polygon(polygon: "Base", coords, coord_counts):
         local_coords_count += 1
 
     valid: bool = fix_polygon_orientation(local_coords, True)
-    if valid:
-        coords.extend(local_coords)
-        coord_counts[-1].append(local_coords_count)
+    #if valid:
+    coords.extend(local_coords)
+    coord_counts[-1].append(local_coords_count)
 
     for void in polygon.voids:
         local_coords_count = 0
@@ -227,9 +227,9 @@ def convert_polygon(polygon: "Base", coords, coord_counts):
             local_coords_count += 1
 
         valid: bool = fix_polygon_orientation(local_coords, False)
-        if valid:
-            coords.extend(local_coords)
-            coord_counts[-1].append(local_coords_count)
+        #if valid:
+        coords.extend(local_coords)
+        coord_counts[-1].append(local_coords_count)
     
 def convert_hatch(hatch: "Base", coords, coord_counts):
     """Convert Hatch."""
@@ -252,18 +252,18 @@ def convert_hatch(hatch: "Base", coords, coord_counts):
     local_coords = []
     convert_icurve(boundary, local_coords, local_coords_count)
     valid: bool = fix_polygon_orientation(local_coords, True)
-    if valid:
-        coords.extend(local_coords)
-        coord_counts.extend(local_coords_count)
+    #if valid:
+    coords.extend(local_coords)
+    coord_counts.extend(local_coords_count)
 
     for void in voids:
         local_coords_count = []
         local_coords = []
         convert_icurve(void, local_coords, local_coords_count)
         valid: bool = fix_polygon_orientation(local_coords, False)
-        if valid:
-            coords.extend(local_coords)
-            coord_counts.extend(local_coords_count)
+        #if valid:
+        coords.extend(local_coords)
+        coord_counts.extend(local_coords_count)
 
     
 def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], List[List[None| List[int]]] ]:
