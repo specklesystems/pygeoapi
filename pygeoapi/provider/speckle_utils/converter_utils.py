@@ -307,6 +307,9 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
             coord_counts.append(None) # as an indicator of a Multi..type
             convert_point(f_base, coords, coord_counts)
 
+        elif isinstance(f_base, Base) and f_base.speckle_type.endswith("PointElement"):
+            raise TypeError(f"Deprecated speckleType {f_base.speckle_type}. Try loading more recent data.")
+        
     elif self.requested_data_type == "lines":
         if (isinstance(f_base, Line) or 
             isinstance(f_base, Polyline) or 
@@ -318,6 +321,9 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
             geometry["type"] = "LineString"
             convert_icurve(f_base, coords, coord_counts)
         
+        elif isinstance(f_base, Base) and f_base.speckle_type.endswith("LineElement"):
+            raise TypeError(f"Deprecated speckleType {f_base.speckle_type}. Try loading more recent data.")
+    
     elif self.requested_data_type.startswith("polygons"):
         if isinstance(f_base, Base) and f_base.speckle_type.endswith(".Hatch"):
             geometry["type"] = "MultiPolygon"
@@ -328,6 +334,9 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
             geometry["type"] = "MultiPolygon"        
             coord_counts.append(None) # as an indicator of a Multi..type
             convert_mesh_or_brep(f_base, coords, coord_counts)
+        
+        elif isinstance(f_base, Base) and f_base.speckle_type.endswith("PolygonElement"):
+            raise TypeError(f"Deprecated speckleType {f_base.speckle_type}. Try loading more recent data.")
     
     elif self.requested_data_type == "projectcomments":
         if isinstance(f_base, List): # comment position

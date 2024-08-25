@@ -100,7 +100,7 @@ resources:
         title:
             en: Speckle data
         description:
-            en: some random data
+            en: Latest version of Speckle Model data
         keywords:
             en:
                 - 3d data

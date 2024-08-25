@@ -43,6 +43,8 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
                 coord_counts = []
                 obj_display, obj_get_color = find_display_obj(f_base)
                 coords, coord_counts = assign_geometry(self, feature, obj_display)
+            except TypeError as ex:
+                raise ex
             except Exception as e:
                 print(e)
                 pass
