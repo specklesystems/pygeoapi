@@ -255,12 +255,13 @@ class SpeckleProvider(BaseProvider):
             select_properties=select_properties,
         )
         if data is None:
-            return {"features":[]}
+            return {"features":[], "comments":[]}
 
         data["numberMatched"] = len(data["features"])
 
         if resulttype == "hits":
             data["features"] = []
+            data["comments"] = []
         else:
             data["features"] = data["features"][offset : offset + limit]
             data["numberReturned"] = len(data["features"])
@@ -313,7 +314,7 @@ class SpeckleProvider(BaseProvider):
     def load_speckle_data(self: str) -> Dict:
         """Receive and process Speckle data, return geojson."""
 
-        from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client
+        from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client, get_comments
 
         from specklepy.logging.exceptions import SpeckleException
         from specklepy.api import operations
@@ -334,6 +335,8 @@ class SpeckleProvider(BaseProvider):
         # get stream and branch data
         client = get_client(wrapper, url_proj)
         stream, branch = get_stream_branch(self, client, wrapper)
+
+        comments = get_comments(client, wrapper.stream_id, wrapper.model_id)
 
         # set the Model name
         self.model_name = branch['name']
@@ -360,14 +363,15 @@ class SpeckleProvider(BaseProvider):
         )
 
         print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
-        speckle_data = self.traverse_data(commit_obj)
+        speckle_data = self.traverse_data(commit_obj, comments)
 
         speckle_data["project"] = stream['name']
         speckle_data["model"] = branch['name']
+        speckle_data["model_id"] = wrapper.model_id
 
         return speckle_data
 
-    def traverse_data(self, commit_obj) -> Dict:
+    def traverse_data(self, commit_obj, comments) -> Dict:
         """Traverse Speckle commit and return geojson with features."""
 
         from specklepy.objects.geometry import Point, Line, Curve, Arc, Circle, Ellipse, Polyline, Polycurve, Mesh, Brep
@@ -398,6 +402,7 @@ class SpeckleProvider(BaseProvider):
         data: Dict[str, Any] = {
             "type": "FeatureCollection",
             "features": [],
+            "comments": [],
             "model_crs": "-",
         }
         rule = TraversalRule(
@@ -413,7 +418,8 @@ class SpeckleProvider(BaseProvider):
 
         get_set_crs_settings(self, commit_obj, context_list, data)
         set_default_color(context_list)
-        create_features(self, context_list, data)
+
+        create_features(self, context_list, comments, data)
 
         return data
     

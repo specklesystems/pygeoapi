@@ -269,7 +269,7 @@ def convert_hatch(hatch: "Base", coords, coord_counts):
 def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], List[List[None| List[int]]] ]:
     """Assign geom type and convert object coords into flat lists of coordinates and schema."""
 
-    from specklepy.objects.geometry import Point, Line, Polyline, Arc, Curve, Circle, Polycurve, Mesh, Brep
+    from specklepy.objects.geometry import Base, Point, Line, Polyline, Arc, Curve, Circle, Polycurve, Mesh, Brep
     from specklepy.objects.GIS.geometry import GisPolygonGeometry
 
     geometry = feature["geometry"]
@@ -291,7 +291,7 @@ def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], Li
         geometry["type"] = "LineString"
         convert_icurve(f_base, coords, coord_counts)
         
-    elif f_base.speckle_type.endswith(".Hatch"):
+    elif isinstance(f_base, Base) and f_base.speckle_type.endswith(".Hatch"):
         geometry["type"] = "MultiPolygon"
         coord_counts.append(None)
         convert_hatch(f_base, coords, coord_counts)
@@ -301,7 +301,7 @@ def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], Li
         coord_counts.append(None) # as an indicator of a Multi..type
         convert_mesh_or_brep(f_base, coords, coord_counts)
 
-    elif f_base.speckle_type.endswith("Feature") and len(f_base["geometry"]) > 0: # isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
+    elif isinstance(f_base, Base) and f_base.speckle_type.endswith("Feature") and len(f_base["geometry"]) > 0: # isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
         # GisFeature doesn't deserialize properly, need to check for speckle_type 
 
         if isinstance(f_base["geometry"][0], Point):
@@ -324,6 +324,13 @@ def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], Li
 
             for geom in f_base["geometry"]:
                 convert_polygon(geom, coords, coord_counts)
+    
+    elif isinstance(f_base, List): # comment position
+        geometry["type"] = "MultiPoint"
+        coord_counts.append(None) # as an indicator of a Multi..type
+
+        coords.append([f_base[0], f_base[1], f_base[2]])
+        coord_counts.append([1])
 
     else:
         geometry = {}

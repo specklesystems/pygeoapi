@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, List
 
 
-def initialize_features(all_coords, all_coord_counts, data, context_list) -> None:
+def initialize_features(all_coords, all_coord_counts, data, context_list, comments: Dict) -> None:
     """Create features with props and displayProps, and assign flat list of coordinates."""
 
     from pygeoapi.provider.speckle_utils.props_utils import assign_props, assign_missing_props
@@ -35,10 +35,14 @@ def initialize_features(all_coords, all_coord_counts, data, context_list) -> Non
 
         # feature geometry, props and displayProps
         try: # don't break the code if 1 feature fails
+            coords = []
+            coord_counts = []
             obj_display, obj_get_color = find_display_obj(f_base)
             coords, coord_counts = assign_geometry(feature, obj_display)
-        except:
+        except Exception as e:
+            print(e)
             pass
+
         if len(coords)!=0:
             all_coords.extend(coords)
             all_coord_counts.append(coord_counts)
@@ -51,8 +55,36 @@ def initialize_features(all_coords, all_coord_counts, data, context_list) -> Non
 
             assign_display_properties(feature, f_base,  obj_get_color)
             data["features"].append(feature)
-    
+
     assign_missing_props(data["features"], all_props)
+
+    ####################### create comment features
+    for comm_id, comment in comments.items():
+        # initialize comment
+        feature: Dict = {
+            "type": "Feature",
+            "id": comm_id,
+            "geometry": {},
+            "properties": {
+                "text": "",
+                "urls": []
+            },
+        }
+
+        try: # don't break the code if 1 comment fails
+            coords = []
+            coord_counts = []
+            coords, coord_counts = assign_geometry(feature, comment["position"])
+        except Exception as e:
+            print(e)
+            pass
+
+        if len(coords)!=0:
+            all_coords.extend(coords)
+            all_coord_counts.append(coord_counts)
+            assign_comment_data(comment["items"], feature["properties"])
+            data["comments"].append(feature)
+    ########################
 
     if len(data["features"])==0:
         raise ValueError("No supported features found")
@@ -60,12 +92,32 @@ def initialize_features(all_coords, all_coord_counts, data, context_list) -> Non
     time2 = datetime.now()
     print(f"Creating features time: {(time2-time1).total_seconds()}")
 
-def create_features(self: "SpeckleProvider", context_list: List["TraversalContext"], data: Dict) -> None:
+def assign_comment_data(comments, properties):
+
+    for item in comments:
+        r'''
+        "author": author_name,
+        "date": created_date,
+        "text": raw_text,
+        "attachments": attachments_paths,
+        '''
+        properties["text"] += f"{item["author"]} at {item["date"]}: \n{item["text"]}\n\n"
+        properties["urls"].append("attachments")
+
+        #properties["author"] = comment["author"]
+        #properties["date"] = comment["date"]
+        #properties["text"] = comment["text"]
+        #properties["attachments"] = comment["attachments"]
+
+
+
+def create_features(self: "SpeckleProvider", context_list: List["TraversalContext"], comments: Dict, data: Dict) -> None:
     """Create features from the list of traversal context."""
 
     from pygeoapi.provider.speckle_utils.coords_utils import reproject_bulk
 
     all_coords = []
     all_coord_counts = []
-    initialize_features(all_coords, all_coord_counts, data, context_list)
-    reproject_bulk(self, all_coords, all_coord_counts, [f["geometry"] for f in data["features"]])
+    initialize_features(all_coords, all_coord_counts, data, context_list, comments)
+    all_features = data["features"] + data["comments"]
+    reproject_bulk(self, all_coords, all_coord_counts, [f["geometry"] for f in all_features])

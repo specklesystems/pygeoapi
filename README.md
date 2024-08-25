@@ -30,6 +30,20 @@ pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 pygeoapi serve
 ```
 
+Repeated launch:
+```python
+cd pygeoapi_venv
+Scripts\activate
+cd pygeoapi
+python setup.py install
+set PYGEOAPI_CONFIG=example-config.yml
+set PYGEOAPI_OPENAPI=example-config.yml
+set MAPTILER_KEY_LOCAL=your_api_key
+pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
+pygeoapi serve
+
+```
+
 Example URL:
 http://localhost:5000/?limit=10000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
 
