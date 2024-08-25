@@ -17,7 +17,15 @@ def get_set_url_parameters(self: "SpeckleProvider"):
         for item in self.data.lower().split("&"):
 
             # if CRS authid is found, rest will be ignored
-            if "crsauthid=" in item:
+            if "datatype=" in item:
+                try:
+                    self.requested_data_type = item.split("datatype=")[1]
+                    if self.requested_data_type not in ["point", "polyline", "polygon", "comment"]:
+                        self.requested_data_type = "polygon (default)"
+                except:
+                    pass
+                
+            elif "crsauthid=" in item:
                 crs_authid = item.split("crsauthid=")[1]
             elif "lat=" in item:
                 try:
