@@ -122,9 +122,7 @@ def assign_color(obj_display, props) -> None:
         if isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
             sameColors = True
             color1 = obj_display.colors[0]
-            for i, c in enumerate(obj_display.colors):
-                if i==2:
-                    break
+            for c in obj_display.colors:
                 if c != color1:
                     sameColors = False
                     break
