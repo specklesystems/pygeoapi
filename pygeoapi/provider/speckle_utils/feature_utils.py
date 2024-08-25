@@ -83,6 +83,7 @@ def initialize_features(all_coords, all_coord_counts, data, context_list, commen
             all_coords.extend(coords)
             all_coord_counts.append(coord_counts)
             assign_comment_data(comment["items"], feature["properties"])
+            print(feature["properties"]["text"])
             data["comments"].append(feature)
     ########################
 
@@ -97,11 +98,16 @@ def assign_comment_data(comments, properties):
     for item in comments:
         r'''
         "author": author_name,
-        "date": created_date,
+        "date": created_date, # e.g. 2024-08-25T13:52:50.562Z
         "text": raw_text,
         "attachments": attachments_paths,
         '''
-        properties["text"] += f"{item["author"]} at {item["date"]}: \n{item["text"]}\n\n"
+        try:
+            formatted_time = datetime.strptime(item["date"].replace("T", " ").replace("Z","").split(".")[0], '%Y-%m-%d %H:%M:%S')
+        except:
+            formatted_time = item["date"]
+        
+        properties["text"] += f"<b>{item["author"]}</b> at {formatted_time}: <br> &emsp; {item["text"]}<br><br>"
         properties["urls"].append("attachments")
 
         #properties["author"] = comment["author"]
