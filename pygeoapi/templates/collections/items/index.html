@@ -209,7 +209,7 @@
     var map = L.map('items-map').setView([{{ 45 }}, {{ -75 }}], 5);
     map.addLayer(new L.TileLayer(
         '{{ config['server']['map']['url'] }}', {
-            maxZoom: 24,
+            maxZoom: 22,
             attribution: '{{ config['server']['map']['attribution'] | safe }}'
         }
     ));
