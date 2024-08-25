@@ -26,6 +26,9 @@ def initialize_features(all_coords, all_coord_counts, data, context_list, commen
             "type": "Feature",
             # "bbox": [-180.0, -90.0, 180.0, 90.0],
             "geometry": {},
+            "displayProperties":{
+                "object_type": "geometry",
+            },
             "properties": {
                 "id": f_id,
                 "FID": f_fid,
@@ -65,6 +68,9 @@ def initialize_features(all_coords, all_coord_counts, data, context_list, commen
             "type": "Feature",
             "id": comm_id,
             "geometry": {},
+            "displayProperties": {
+                "object_type": "comment",
+            },
             "properties": {
                 "text": "",
                 "urls": []

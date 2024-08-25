@@ -211,12 +211,12 @@
     ));
 
     var geojson_data = {{ data['features'] | to_json | safe }};
-    var geojson_comments = {{ data['comments'] | to_json | safe }};
+    // var geojson_comments = {{ data['comments'] | to_json | safe }};
 
     var items = new L.GeoJSON(geojson_data, {
-        // filter: (feature) => {
-        //   return feature['geometry']['type'] != 'Point' && feature['geometry']['type'] != 'MultiPoint'
-        // },
+        filter: (feature) => {
+          return feature.displayProperties["object_type"] == "geometry"
+        },
         pointToLayer: (feature, latlng) => {
             return new L.circleMarker(latlng)            
         },
@@ -239,10 +239,10 @@
         }
     }); //.addTo(map);
     
-    var comments = new L.GeoJSON(geojson_comments, {
-        // filter: (feature) => {
-        //   return feature['geometry']['type'] != 'Point' && feature['geometry']['type'] != 'MultiPoint'
-        // },
+    var comments = new L.GeoJSON(geojson_data, {
+        filter: (feature) => {
+          return feature.displayProperties["object_type"] == "comment"
+        },
         pointToLayer: (feature, latlng) => {
             return new L.marker(latlng)            
         },
@@ -250,7 +250,6 @@
             var url = '{{ data['speckle_project_url'] }}/models/{{ data['model_id'] }}#threadId=' + feature.id; 
             var html = '<span><td><a href="' + url + '" target="_blank">Go to thread</a></td> <td><p>' + feature['properties']['text'] + '</p></td>  </span>';
             layer.bindPopup(html);
-
         }
     }); //.addTo(map);
 

@@ -161,7 +161,6 @@ def assign_display_properties(feature: Dict, f_base: "Base",  obj_display: "Base
     
     from specklepy.objects.geometry import Mesh, Brep    
 
-    feature["displayProperties"] = {}
     assign_color(obj_display, feature["displayProperties"])
 
     # other properties for rendering 

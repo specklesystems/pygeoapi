@@ -365,6 +365,8 @@ class SpeckleProvider(BaseProvider):
 
         print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
         speckle_data = self.traverse_data(commit_obj, comments)
+        speckle_data["features"].extend(speckle_data["comments"])
+        speckle_data["comments"] = []
 
         speckle_data["project"] = stream['name']
         speckle_data["model"] = branch['name']
