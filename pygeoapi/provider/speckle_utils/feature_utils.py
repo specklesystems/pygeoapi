@@ -78,7 +78,7 @@ def initialize_features(all_coords, all_coord_counts, data, context_list, commen
         except Exception as e:
             print(e)
             pass
-
+        
         if len(coords)!=0:
             all_coords.extend(coords)
             all_coord_counts.append(coord_counts)

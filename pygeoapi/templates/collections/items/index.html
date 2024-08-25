@@ -212,8 +212,6 @@
 
     var geojson_data = {{ data['features'] | to_json | safe }};
     var geojson_comments = {{ data['comments'] | to_json | safe }};
-    console.log(geojson_data)
-    console.log(geojson_comments)
 
     var items = new L.GeoJSON(geojson_data, {
         // filter: (feature) => {
