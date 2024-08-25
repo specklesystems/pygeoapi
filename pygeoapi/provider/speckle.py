@@ -340,7 +340,7 @@ class SpeckleProvider(BaseProvider):
         client = get_client(wrapper, url_proj)
         stream, branch = get_stream_branch(self, client, wrapper)
 
-        if self.requested_data_type == "comment":
+        if self.requested_data_type == "projectcomments":
             comments = get_comments(client, wrapper.stream_id, wrapper.model_id)
             # commit_obj = Base() # still need to receive object to get the CRS
         else:
