@@ -77,6 +77,10 @@ def reproject_2d_coords_list(self, coords_in: List[List[float]]) -> List[List[fl
         always_xy=True,
     )
     transformed = [[pt[0], pt[1], pt[2]] for pt in transformer.itransform(coords_offset)]
+    
+    all_x = [x[0] for x in transformed]
+    all_y = [x[1] for x in transformed]
+    self.extent = [min(all_x), min(all_y), max(all_x), max(all_y)]
     return transformed
 
 def offset_rotate(self, coords_in: List[list]) -> List[List[float]]:

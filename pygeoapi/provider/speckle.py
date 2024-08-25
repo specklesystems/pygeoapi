@@ -129,6 +129,7 @@ class SpeckleProvider(BaseProvider):
         self.lat: float = 51.52486388756923
         self.lon: float = 0.1621445437168942
         self.north_degrees: float = 0
+        self.extent = [-180,-90,180,90]
 
 
     def get_fields(self):
@@ -258,13 +259,14 @@ class SpeckleProvider(BaseProvider):
             select_properties=select_properties,
         )
         if data is None:
-            return {"features":[], "comments":[]}
+            return {"features":[], "comments":[], "extent": [-180,-90,180,90]}
 
         data["numberMatched"] = len(data["features"])
 
         if resulttype == "hits":
             data["features"] = []
             data["comments"] = []
+            data["extent"] = [-180,-90,180,90]
         else:
             data["features"] = data["features"][offset : offset + limit]
             data["numberReturned"] = len(data["features"])
@@ -378,6 +380,7 @@ class SpeckleProvider(BaseProvider):
         speckle_data["project"] = stream['name']
         speckle_data["model"] = branch['name']
         speckle_data["model_id"] = wrapper.model_id
+        speckle_data["extent"] = self.extent
 
         return speckle_data
 
@@ -413,6 +416,7 @@ class SpeckleProvider(BaseProvider):
             "type": "FeatureCollection",
             "features": [],
             "comments": [],
+            "extent": [-180,-90,180,90],
             "model_crs": "-",
         }
         rule = TraversalRule(

@@ -117,7 +117,7 @@
 
         //////// add Speckle layer
         (async () => {
-            const geojson = await fetch('http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
+            const geojson = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
                 headers: {
                 'Accept': 'application/geo+json'
                 }
@@ -138,26 +138,38 @@
                 "limit": geojson["limit"],
                 "north_degrees": geojson["north_degrees"],
                 "model_crs": geojson["model_crs"],
-                //"extent": geojson["extent"],
+                "extent": geojson["extent"],
             }
             
             speckleLayer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                     features: new ol.format.GeoJSON().readFeatures(speckle_data, { featureProjection: 'EPSG:3857' }),
-                    attributions: 'Speckle Systems.'
-                }),
-                // extent: [68.17665, 7.96553, 97.40256, 35.49401],
+                    attributions: ' &copy; Data: <a href="https://speckle.systems/">Speckle Systems</a>.'
+                })
             });
 
             map.addLayer(speckleLayer);
 
-            //if (speckleLayer.getSource().getFeatures().length > 0) {
-            //    var myExtent = speckleLayer.getExtent();
-            //    console.log(myExtent);
-            //    map.getView().fit(myExtent , map.getSize());
-            //}
+            function epsg4326toEpsg3857(coordinates) {
+                let x = coordinates[0];
+                let y = coordinates[1];
+                x = (coordinates[0] * 20037508.34) / 180;
+                y =
+                    Math.log(Math.tan(((90 + coordinates[1]) * Math.PI) / 360)) /
+                    (Math.PI / 180);
+                y = (y * 20037508.34) / 180;
+                return [x, y];
+            }
+            min_xy = [speckle_data["extent"][0], speckle_data["extent"][1]]
+            max_xy = [speckle_data["extent"][2], speckle_data["extent"][3]]
+            
+            min_xy_new = epsg4326toEpsg3857(min_xy);
+            max_xy_new = epsg4326toEpsg3857(max_xy);
+
+            if (speckleLayer.getSource().getFeatures().length > 0) {
+                map.getView().fit( [min_xy_new[0], min_xy_new[1], max_xy_new[0], max_xy_new[1]], map.getSize() );
+            }
         })();
-        ///////////////////////////
 
     </script>
 </body>
