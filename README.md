@@ -9,7 +9,27 @@
 
 Please read the docs at [https://docs.pygeoapi.io](https://docs.pygeoapi.io) for more information.
 
-## Speckle plugin
+# Speckle implementation of pygeoapi
+
+## How to use Speckle data through OGC API Features
+
+### QGIS
+1. Add new WFS Layer
+
+![image](https://github.com/user-attachments/assets/ea168853-dc97-43bf-b9f2-4d0244addb01)
+
+2. Create New connection, specify the name and URL with mandatory "speckleUrl" parameter pointing to the Speckle Model. Then click Detect, and the WFS Version should display "OGC API Features". Click OK.
+
+![image](https://github.com/user-attachments/assets/8bf9f164-bdb1-455e-8298-f0c1d5dd324d)
+
+3. Connect, select the dataset "Speckle data" and click "Add".
+
+![image](https://github.com/user-attachments/assets/73c97729-f3b3-4192-a4cf-667ba147fc6f)
+
+4. Loading of the data might take a minute, then you will be able to Zoom to layer and check the Attribute table. Done! 
+
+![image](https://github.com/user-attachments/assets/0708c64e-b063-4f55-b9f4-e791fc32da95)
+
 
 Launch:
 ```python
