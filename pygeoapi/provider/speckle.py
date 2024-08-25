@@ -329,7 +329,7 @@ class SpeckleProvider(BaseProvider):
         wrapper: StreamWrapper = StreamWrapper(url_proj)
 
         # set actual branch
-        wrapper.model_id = self.speckle_url.split("models/")[1].split("/")[0].split("&")[0]
+        wrapper.model_id = self.speckle_url.split("models/")[1].split(" ")[0].split("/")[0].split("&")[0].split(",")[0].split(";")[0].split("@")[0]
         
         # get stream and branch data
         client = get_client(wrapper, url_proj)
