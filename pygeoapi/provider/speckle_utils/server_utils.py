@@ -187,7 +187,13 @@ def get_attachment(project_id: str, attachment_id: str, attachment_name: str) ->
     import requests
     import shutil
 
-    file_path: Path = Path(Path(pygeoapi.__file__).parent.parent, "Temp_attachments", attachment_name)
+    return attachment_name
+
+    file_path_obj: Path = Path(Path(pygeoapi.__file__).parent.parent, "Temp_attachments", attachment_name)
+    print(file_path_obj)
+    file_path = str(file_path_obj)
+    print(file_path)
+
     if os.path.isfile(file_path) is True: # if already saved
         return file_path
     
