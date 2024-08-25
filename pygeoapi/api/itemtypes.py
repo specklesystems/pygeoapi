@@ -587,7 +587,7 @@ def get_collection_items(
             content['speckle_project_url'] = content['speckle_url'].split("/models")[0]
         elif "datatype=" in item:
             content['requested_data_type'] = item.split("datatype=")[1]
-            if content['requested_data_type'] not in ["point", "polyline", "polygon", "comment"]:
+            if content['requested_data_type'] not in ["point", "line", "polygon", "comment"]:
                 content['requested_data_type'] = "polygon (default)"
         elif "crsauthid=" in item:
             content['crs_authid'] = item.split("crsauthid=")[1]

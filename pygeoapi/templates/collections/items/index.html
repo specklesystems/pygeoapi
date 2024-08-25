@@ -252,7 +252,7 @@
         },
         onEachFeature: function (feature, layer) {
             var url = '{{ data['speckle_project_url'] }}/models/{{ data['model_id'] }}#threadId=' + feature.id; 
-            var html = '<span><td><a href="' + url + '" target="_blank">Go to thread</a></td> <td><p>' + feature['properties']['text'] + '</p></td>  </span>';
+            var html = '<span><td><a href="' + url + '" target="_blank">Go to thread</a></td> <td><p>' + feature['properties']['text_html'] + '</p></td>  </span>';
             layer.bindPopup(html);
         }
     }); //.addTo(map);

@@ -266,7 +266,7 @@ def convert_hatch(hatch: "Base", coords, coord_counts):
         coord_counts.extend(local_coords_count)
 
     
-def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], List[List[None| List[int]]] ]:
+def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ List[List[List[float]]], List[List[None| List[int]]] ]:
     """Assign geom type and convert object coords into flat lists of coordinates and schema."""
 
     from specklepy.objects.geometry import Base, Point, Line, Polyline, Arc, Curve, Circle, Polycurve, Mesh, Brep
@@ -275,62 +275,67 @@ def assign_geometry(feature: Dict, f_base) -> Tuple[ List[List[List[float]]], Li
     geometry = feature["geometry"]
     coords = [] 
     coord_counts = []
-
-    if isinstance(f_base, Point):
-        geometry["type"] = "MultiPoint"
-        coord_counts.append(None) # as an indicator of a Multi..type
-        convert_point(f_base, coords, coord_counts)
-
-    elif (isinstance(f_base, Line) or 
-        isinstance(f_base, Polyline) or 
-        isinstance(f_base, Curve) or
-        isinstance(f_base, Arc) or
-        isinstance(f_base, Circle) or 
-        isinstance(f_base, Polycurve)):
-
-        geometry["type"] = "LineString"
-        convert_icurve(f_base, coords, coord_counts)
-        
-    elif isinstance(f_base, Base) and f_base.speckle_type.endswith(".Hatch"):
-        geometry["type"] = "MultiPolygon"
-        coord_counts.append(None)
-        convert_hatch(f_base, coords, coord_counts)
-
-    elif isinstance(f_base, Mesh) or isinstance(f_base, Brep):
-        geometry["type"] = "MultiPolygon"        
-        coord_counts.append(None) # as an indicator of a Multi..type
-        convert_mesh_or_brep(f_base, coords, coord_counts)
-
-    elif isinstance(f_base, Base) and f_base.speckle_type.endswith("Feature") and len(f_base["geometry"]) > 0: # isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
+    
+    if isinstance(f_base, Base) and f_base.speckle_type.endswith("Feature") and len(f_base["geometry"]) > 0: # isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
         # GisFeature doesn't deserialize properly, need to check for speckle_type 
 
-        if isinstance(f_base["geometry"][0], Point):
+        if self.requested_data_type == "point" and isinstance(f_base["geometry"][0], Point):
             geometry["type"] = "MultiPoint"
             coord_counts.append(None) # as an indicator of a Multi..type
             
             for geom in f_base["geometry"]:
                 convert_point(geom, coords, coord_counts)
             
-        elif isinstance(f_base["geometry"][0], Polyline):
+        elif self.requested_data_type == "line" and isinstance(f_base["geometry"][0], Polyline):
             geometry["type"] = "MultiLineString"
             coord_counts.append(None)
 
             for geom in f_base["geometry"]:
                 convert_polyline(geom, coords, coord_counts)
 
-        elif isinstance(f_base["geometry"][0], GisPolygonGeometry):
+        elif self.requested_data_type == "polygon" and isinstance(f_base["geometry"][0], GisPolygonGeometry):
             geometry["type"] = "MultiPolygon"
             coord_counts.append(None)
 
             for geom in f_base["geometry"]:
                 convert_polygon(geom, coords, coord_counts)
     
-    elif isinstance(f_base, List): # comment position
-        geometry["type"] = "MultiPoint"
-        coord_counts.append(None) # as an indicator of a Multi..type
 
-        coords.append([f_base[0], f_base[1], f_base[2]])
-        coord_counts.append([1])
+    elif self.requested_data_type == "point":
+        if isinstance(f_base, Point):
+            geometry["type"] = "MultiPoint"
+            coord_counts.append(None) # as an indicator of a Multi..type
+            convert_point(f_base, coords, coord_counts)
+
+    elif self.requested_data_type == "line":
+        if (isinstance(f_base, Line) or 
+            isinstance(f_base, Polyline) or 
+            isinstance(f_base, Curve) or
+            isinstance(f_base, Arc) or
+            isinstance(f_base, Circle) or 
+            isinstance(f_base, Polycurve)):
+
+            geometry["type"] = "LineString"
+            convert_icurve(f_base, coords, coord_counts)
+        
+    elif self.requested_data_type == "polygon":
+        if isinstance(f_base, Base) and f_base.speckle_type.endswith(".Hatch"):
+            geometry["type"] = "MultiPolygon"
+            coord_counts.append(None)
+            convert_hatch(f_base, coords, coord_counts)
+
+        elif isinstance(f_base, Mesh) or isinstance(f_base, Brep):
+            geometry["type"] = "MultiPolygon"        
+            coord_counts.append(None) # as an indicator of a Multi..type
+            convert_mesh_or_brep(f_base, coords, coord_counts)
+    
+    elif self.requested_data_type == "comment":
+        if isinstance(f_base, List): # comment position
+            geometry["type"] = "MultiPoint"
+            coord_counts.append(None) # as an indicator of a Multi..type
+
+            coords.append([f_base[0], f_base[1], f_base[2]])
+            coord_counts.append([1])
 
     else:
         geometry = {}

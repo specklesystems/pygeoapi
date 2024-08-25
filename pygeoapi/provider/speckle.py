@@ -319,6 +319,7 @@ class SpeckleProvider(BaseProvider):
 
         from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client, get_comments
 
+        from specklepy.objects.base import Base
         from specklepy.logging.exceptions import SpeckleException
         from specklepy.api import operations
         from specklepy.core.api.wrapper import StreamWrapper
@@ -339,7 +340,11 @@ class SpeckleProvider(BaseProvider):
         client = get_client(wrapper, url_proj)
         stream, branch = get_stream_branch(self, client, wrapper)
 
-        comments = get_comments(client, wrapper.stream_id, wrapper.model_id)
+        if self.requested_data_type == "comment":
+            comments = get_comments(client, wrapper.stream_id, wrapper.model_id)
+            # commit_obj = Base() # still need to receive object to get the CRS
+        else:
+            comments = {}
 
         # set the Model name
         self.model_name = branch['name']

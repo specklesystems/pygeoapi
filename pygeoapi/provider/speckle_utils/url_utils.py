@@ -20,7 +20,7 @@ def get_set_url_parameters(self: "SpeckleProvider"):
             if "datatype=" in item:
                 try:
                     self.requested_data_type = item.split("datatype=")[1]
-                    if self.requested_data_type not in ["point", "polyline", "polygon", "comment"]:
+                    if self.requested_data_type not in ["point", "line", "polygon", "comment"]:
                         self.requested_data_type = "polygon (default)"
                 except:
                     pass
