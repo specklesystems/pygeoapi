@@ -15,7 +15,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
     
     all_props = []
 
-    if self.requested_data_type != "comment":
+    if self.requested_data_type != "projectcomments":
         for item in context_list:
             
             f_base = item.current

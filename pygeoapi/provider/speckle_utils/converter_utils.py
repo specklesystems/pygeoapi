@@ -279,21 +279,21 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
     if isinstance(f_base, Base) and f_base.speckle_type.endswith("Feature") and len(f_base["geometry"]) > 0: # isinstance(f_base, GisFeature) and len(f_base.geometry) > 0:
         # GisFeature doesn't deserialize properly, need to check for speckle_type 
 
-        if self.requested_data_type == "point" and isinstance(f_base["geometry"][0], Point):
+        if self.requested_data_type == "points" and isinstance(f_base["geometry"][0], Point):
             geometry["type"] = "MultiPoint"
             coord_counts.append(None) # as an indicator of a Multi..type
             
             for geom in f_base["geometry"]:
                 convert_point(geom, coords, coord_counts)
             
-        elif self.requested_data_type == "line" and isinstance(f_base["geometry"][0], Polyline):
+        elif self.requested_data_type == "lines" and isinstance(f_base["geometry"][0], Polyline):
             geometry["type"] = "MultiLineString"
             coord_counts.append(None)
 
             for geom in f_base["geometry"]:
                 convert_polyline(geom, coords, coord_counts)
 
-        elif self.requested_data_type == "polygon" and isinstance(f_base["geometry"][0], GisPolygonGeometry):
+        elif self.requested_data_type.startswith("polygons") and isinstance(f_base["geometry"][0], GisPolygonGeometry):
             geometry["type"] = "MultiPolygon"
             coord_counts.append(None)
 
@@ -301,13 +301,13 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
                 convert_polygon(geom, coords, coord_counts)
     
 
-    elif self.requested_data_type == "point":
+    elif self.requested_data_type == "points":
         if isinstance(f_base, Point):
             geometry["type"] = "MultiPoint"
             coord_counts.append(None) # as an indicator of a Multi..type
             convert_point(f_base, coords, coord_counts)
 
-    elif self.requested_data_type == "line":
+    elif self.requested_data_type == "lines":
         if (isinstance(f_base, Line) or 
             isinstance(f_base, Polyline) or 
             isinstance(f_base, Curve) or
@@ -318,7 +318,7 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
             geometry["type"] = "LineString"
             convert_icurve(f_base, coords, coord_counts)
         
-    elif self.requested_data_type == "polygon":
+    elif self.requested_data_type.startswith("polygons"):
         if isinstance(f_base, Base) and f_base.speckle_type.endswith(".Hatch"):
             geometry["type"] = "MultiPolygon"
             coord_counts.append(None)
@@ -329,7 +329,7 @@ def assign_geometry(self: "SpeckleProvider", feature: Dict, f_base) -> Tuple[ Li
             coord_counts.append(None) # as an indicator of a Multi..type
             convert_mesh_or_brep(f_base, coords, coord_counts)
     
-    elif self.requested_data_type == "comment":
+    elif self.requested_data_type == "projectcomments":
         if isinstance(f_base, List): # comment position
             geometry["type"] = "MultiPoint"
             coord_counts.append(None) # as an indicator of a Multi..type
