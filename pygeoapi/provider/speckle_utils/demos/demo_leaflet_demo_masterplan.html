@@ -14,7 +14,7 @@
     <main style="margin-left: 20px;margin-right: 20px;">
         
         <div class="row">
-            <h3>Speckle geoapi demo: fetch comments</h3>
+            <h3>Speckle pygeoapi demo: display masterplan</h3>
         </div>
         <div>
             <div class="row">
@@ -34,7 +34,7 @@
         ));
         
         (async () => {
-                const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments', {
+                const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
                    headers: {
                      'Accept': 'application/geo+json'
                    }
@@ -42,14 +42,26 @@
              
                 speckle_layer = L.geoJSON(speckle_data, {
                     filter: (feature) => {
-                    return feature.displayProperties["object_type"] == "comment"
+                    return feature.displayProperties["object_type"] == "geometry"
                     },
                     pointToLayer: (feature, latlng) => {
-                        return new L.marker(latlng)            
+                        return new L.circleMarker(latlng)            
                     },
                     onEachFeature: function (feature, layer) {
-                        var html = '<span><td><p>' + feature['properties']['text_html'] + '</p></td>  </span>';
+                        var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td></span>';
                         layer.bindPopup(html);
+
+                        var myFillColor = feature.displayProperties['color'];
+                        var mylineWeight = feature.displayProperties['lineWidth'];
+                        var myRadius = feature.displayProperties['radius'];
+
+                        layer.setStyle({
+                            fillColor: myFillColor,
+                            color: myFillColor,
+                            fillOpacity: 0.8,
+                            weight: mylineWeight,
+                            radius: myRadius
+                        });
                     }
                 });
                 speckle_layer.addTo(map);

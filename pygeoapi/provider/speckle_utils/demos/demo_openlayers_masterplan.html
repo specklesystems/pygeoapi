@@ -1,0 +1,165 @@
+
+<!-- Modified sample from: https://openstreetmap.be/en/projects/howto/openlayers.html -->
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css"
+        type="text/css">
+
+    <title>OpenLayers demo</title>
+
+    <style>
+        .ol-attribution.ol-logo-only,
+        .ol-attribution.ol-uncollapsible {
+            max-width: calc(100% - 3em) !important;
+            height: 1.5em !important;
+        }
+
+        .ol-control button,
+        .ol-attribution,
+        .ol-scale-line-inner {
+            font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif !important;
+        }
+
+        .ol-popup {
+            font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif !important;
+            font-size: 12px;
+            position: absolute;
+            background-color: white;
+            -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 100px;
+        }
+
+        .ol-popup:after,
+        .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+
+        .ol-popup-closer:after {
+            content: "✖";
+            color: #c3c3c3;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="row">
+        <h3>Speckle pygeoapi demo with OpenLayers</h3>
+    </div>
+    <div id="map"  style="margin-left: 20px;margin-right: 20px;"></div>
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+
+    <script>
+
+        var attribution = new ol.control.Attribution({
+            collapsible: false
+        });
+
+        var map = new ol.Map({
+            controls: ol.control.defaults({ attribution: false }).extend([attribution]),
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM({
+                        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        attributions: [ol.source.OSM.ATTRIBUTION],
+                        maxZoom: 18
+                    })
+                })
+            ],
+            target: 'map',
+            view: new ol.View({
+                center: ol.proj.fromLonLat([0,0]),
+                maxZoom: 22,
+                zoom: 3
+            })
+        });
+
+        //////// add Speckle layer
+        (async () => {
+            const geojson = await fetch('http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
+                headers: {
+                'Accept': 'application/geo+json'
+                }
+            }).then(response => response.json());
+
+            speckle_data = {
+                "type": "FeatureCollection", 
+                "features": geojson["features"],
+                "model": geojson["model"],
+                "model_id": geojson["model_id"],
+                "project": geojson["project"],
+                "requested_data_type": geojson["requested_data_type"],
+                "speckle_url": geojson["speckle_url"],
+                "speckle_project_url": geojson["speckle_project_url"],
+                "timestamp": geojson["timestamp"],
+                "lat": geojson["lat"],
+                "lon": geojson["lon"],
+                "limit": geojson["limit"],
+                "north_degrees": geojson["north_degrees"],
+                "model_crs": geojson["model_crs"],
+                //"extent": geojson["extent"],
+            }
+            
+            speckleLayer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: new ol.format.GeoJSON().readFeatures(speckle_data, { featureProjection: 'EPSG:3857' }),
+                    attributions: 'Speckle Systems.'
+                }),
+                // extent: [68.17665, 7.96553, 97.40256, 35.49401],
+            });
+
+            map.addLayer(speckleLayer);
+
+            //if (speckleLayer.getSource().getFeatures().length > 0) {
+            //    var myExtent = speckleLayer.getExtent();
+            //    console.log(myExtent);
+            //    map.getView().fit(myExtent , map.getSize());
+            //}
+        })();
+        ///////////////////////////
+
+    </script>
+</body>
+
+</html>
