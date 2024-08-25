@@ -119,15 +119,7 @@ def assign_color(obj_display, props) -> None:
     color = DEFAULT_COLOR
 
     try:
-        if hasattr(obj_display, 'displayStyle'):
-            color = obj_display['displayStyle']['color']
-        elif hasattr(obj_display, '@displayStyle'):
-            color = obj_display['@displayStyle']['color']
-        elif hasattr(obj_display, 'renderMaterial'):
-            color = obj_display['renderMaterial']['diffuse']
-        elif hasattr(obj_display, '@renderMaterial'):
-            color = obj_display['@renderMaterial']['diffuse']
-        elif isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
+        if isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
             sameColors = True
             color1 = obj_display.colors[0]
             for c in obj_display.colors:
@@ -136,6 +128,15 @@ def assign_color(obj_display, props) -> None:
                     break
             if sameColors is True:
                 color = color1
+
+        elif hasattr(obj_display, 'displayStyle'):
+            color = obj_display['displayStyle']['color']
+        elif hasattr(obj_display, '@displayStyle'):
+            color = obj_display['@displayStyle']['color']
+        elif hasattr(obj_display, 'renderMaterial'):
+            color = obj_display['renderMaterial']['diffuse']
+        elif hasattr(obj_display, '@renderMaterial'):
+            color = obj_display['@renderMaterial']['diffuse']
     except Exception as e:
         print(e)
     
