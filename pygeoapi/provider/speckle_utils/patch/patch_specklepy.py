@@ -127,10 +127,14 @@ def copy_gis_feature():
 
 def patch_specklepy():
 
-    if complete_patch():
-        return
+    #if complete_patch():
+    #    return
     
     patch_credentials()
     copy_gis_feature()
     patch_transport()
     patch_serializer()
+
+if __name__ == "__main__":
+    patch_specklepy()
+    

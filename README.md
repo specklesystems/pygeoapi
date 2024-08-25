@@ -22,6 +22,9 @@ git checkout dev
 // git reset --hard dev
 // pip install --upgrade pip
 // pip install -r requirements.txt
+python -m pip install --upgrade specklepy==2.19.6
+python -m pip install pydantic==1.10.17
+python pygeoapi\provider\speckle_utils\patch\patch_specklepy.py
 python setup.py install
 set PYGEOAPI_CONFIG=example-config.yml // export
 set PYGEOAPI_OPENAPI=example-config.yml // export
@@ -35,6 +38,9 @@ Repeated launch:
 cd pygeoapi_venv
 Scripts\activate
 cd pygeoapi
+python -m pip install --upgrade specklepy==2.19.6
+python -m pip install pydantic==1.10.17
+python pygeoapi\provider\speckle_utils\patch\patch_specklepy.py
 python setup.py install
 set PYGEOAPI_CONFIG=example-config.yml
 set PYGEOAPI_OPENAPI=example-config.yml
