@@ -14,6 +14,11 @@ Please read the docs at [https://docs.pygeoapi.io](https://docs.pygeoapi.io) for
 ## How to use Speckle data through OGC API Features
 
 Description: TODO
+Demo page: https://geo.speckle.systems/ 
+
+### How to construct a valid URL to get georeferenced Speckle layer
+URL should start with 'https://geo.speckle.systems/?' followed by required and optional parameters. Parameters should be separated with '&' symbol. 
+Example: [https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c/&lat=25&lon=0&northDegrees=40](https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c/&lat=25&lon=0&northDegrees=40)
 
 Supported URL arguments:
  - speckleUrl (text) - required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'
@@ -25,7 +30,6 @@ Supported URL arguments:
  - northDegrees (number), in range -180 to 180
 If GIS-originated Speckle model is loaded, no additional arguments are needed, except SPECKLEURL.  
 
-Demo page: https://geo.speckle.systems/ 
 
 ### Add Speckle Feature Layer to a web-based map
 
