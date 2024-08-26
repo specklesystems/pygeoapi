@@ -13,7 +13,25 @@ Please read the docs at [https://docs.pygeoapi.io](https://docs.pygeoapi.io) for
 
 ## How to use Speckle data through OGC API Features
 
-### QGIS
+Description: TODO
+
+Supported URL arguments:
+ - speckleUrl (text) - required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'
+ - dataType (text), one of: points, lines, polygons or projectcomments
+ - limit (positive integer), recommended, as some applications might apply their custom feature limit
+ - crsAuthid (text), an authority string e.g. 'epsg:4326'. If set, LAT, LON and NORTHDEGREES arguments will be ignored.
+ - lat (number), in range -90 to 90
+ - lon (number), in range -180 to 180
+ - northDegrees (number), in range -180 to 180
+If GIS-originated Speckle model is loaded, no additional arguments are needed, except SPECKLEURL.  
+
+Demo page: https://geo.speckle.systems/ 
+
+### Add Speckle Feature Layer to a web-based map
+
+Check out the examples in 'speckle_demos' folder for Leaflet and OpenLayers implementation.
+
+### Add Speckle WFS layer in QGIS
 1. Add new WFS Layer
 
 ![image](https://github.com/user-attachments/assets/ea168853-dc97-43bf-b9f2-4d0244addb01)
@@ -31,17 +49,26 @@ Please read the docs at [https://docs.pygeoapi.io](https://docs.pygeoapi.io) for
 ![image](https://github.com/user-attachments/assets/0708c64e-b063-4f55-b9f4-e791fc32da95)
 
 
-Launch:
+### Add Speckle OGC API layer in ArcGIS
+
+TODO
+
+
+### Add Speckle WFS layer in Civil3D
+
+TODO
+
+## Local dev
+First launch:
 ```python
-// python -m venv pygeoapi_venv
+python -m venv pygeoapi_venv
 cd pygeoapi_venv
 Scripts\activate
 cd pygeoapi
-// git clone https://github.com/specklesystems/pygeoapi
+git clone https://github.com/specklesystems/pygeoapi
 git checkout dev
-// git reset --hard dev
-// pip install --upgrade pip
-// pip install -r requirements.txt
+pip install --upgrade pip
+pip install -r requirements.txt
 python -m pip install --upgrade specklepy==2.19.6
 python -m pip install pydantic==1.10.17
 python pygeoapi\provider\speckle_utils\patch\patch_specklepy.py
@@ -71,15 +98,6 @@ pygeoapi serve
 ```
 
 Example URL:
-http://localhost:5000/?limit=10000&speckleUrl=https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d
+http://localhost:5000/?limit=10000&speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&dataType=polygons
 
-If GIS-originated Speckle model is loaded, no additional arguments are needed, except SPECKLEURL and LIMIT. 
-
-Supported arguments:
- - speckleUrl (text) - required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'
- - limit (positive integer), recommended, as some applications might apply their custom feature limit
- - crsAuthid (text), an authority string e.g. 'epsg:4326'. If set, LAT, LON and NORTHDEGREES arguments will be ignored.
- - lat (number), in range -90 to 90
- - lon (number), in range -180 to 180
- - northDegrees (number), in range -180 to 180
 
