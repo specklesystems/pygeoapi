@@ -12,6 +12,8 @@
   <div class="row">
     {% if not data['missing_url'] %}
     <div id="items-map" style="min-height: 80vh;"></div>
+    {% else %}
+    <div id="items-map" style="min-height: 40vh;"></div>
     {% endif %}
   </div>
 
@@ -193,9 +195,9 @@
 {% endblock %}
 
 {% block extrafoot %}
-{% if data['features'] %}
+
     <script>
-    var map = L.map('items-map').setView([{{ 45 }}, {{ -75 }}], 5);
+    var map = L.map('items-map').setView([45, 0], 2);
     map.addLayer(new L.TileLayer(
         '{{ config['server']['map']['url'] }}', {
             maxZoom: 22,
@@ -255,5 +257,5 @@
     // map.setZoom(19); // in order for the tiles to load
 
     </script>
-{% endif %}
+
 {% endblock %}
