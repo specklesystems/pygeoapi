@@ -20,7 +20,7 @@ def find_display_obj(obj) -> Tuple["Base", "Base"]:
         faces = []
         verts = []
         colors = []
-        for item in displayValForColor:
+        for i, item in enumerate(displayValForColor):
             if isinstance(item, Mesh):
                 start_vert_count = int(len(verts)/3)
 
@@ -52,8 +52,8 @@ def find_display_obj(obj) -> Tuple["Base", "Base"]:
     
     displayVal = displayValForColor
 
-    # keep reading color from GisFeature Meshes
-    if not obj.speckle_type.endswith("Feature"):
+    # return to reading color from GisFeature Meshes
+    if not obj.speckle_type.endswith("Feature") and "BuiltElements.Revit" not in obj.speckle_type:
         displayValForColor = obj
 
     # return known types as is
@@ -113,21 +113,34 @@ def set_default_color(context_list: List["TraversalContext"]) -> None:
 def assign_color(obj_display, props) -> None:
     """Get and assign color to feature displayProperties."""
 
-    from specklepy.objects.geometry import Mesh
+    from specklepy.objects.geometry import Base, Mesh, Brep
 
     # initialize Speckle Blue color
     color = DEFAULT_COLOR
 
     try:
-        if isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List):
-            sameColors = True
-            color1 = obj_display.colors[0]
-            for c in obj_display.colors:
-                if c != color1:
-                    sameColors = False
-                    break
-            if sameColors is True:
-                color = color1
+        print(obj_display)
+        # prioritize renderMaterials for Meshes & Brep
+        if isinstance(obj_display, Mesh) or isinstance(obj_display, Brep): 
+            if hasattr(obj_display, 'renderMaterial'):
+                color = obj_display['renderMaterial']['diffuse']
+            elif hasattr(obj_display, '@renderMaterial'):
+                color = obj_display['@renderMaterial']['diffuse']
+
+            elif isinstance(obj_display, Mesh) and isinstance(obj_display.colors, List) and len(obj_display.colors)>1:
+                sameColors = True
+                color1 = obj_display.colors[0]
+                for c in obj_display.colors:
+                    if c != color1:
+                        sameColors = False
+                        break
+                if sameColors is True:
+                    color = color1
+            
+            elif hasattr(obj_display, 'displayStyle'):
+                color = obj_display['displayStyle']['color']
+            elif hasattr(obj_display, '@displayStyle'):
+                color = obj_display['@displayStyle']['color']
 
         elif hasattr(obj_display, 'displayStyle'):
             color = obj_display['displayStyle']['color']
