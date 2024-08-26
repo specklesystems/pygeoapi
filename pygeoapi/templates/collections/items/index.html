@@ -210,7 +210,7 @@
     map.addLayer(new L.TileLayer(
         '{{ config['server']['map']['url'] }}', {
             maxZoom: 22,
-            attribution: '{{ config['server']['map']['attribution'] | safe }}'
+            attribution: '{{ config['server']['map']['attribution'] | safe }}  &copy; Data: <a href="https://speckle.systems/">Speckle Systems</a>'
         }
     ));
 
