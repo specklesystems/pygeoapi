@@ -3,61 +3,121 @@ from typing import Dict, List, Tuple
 
 DEFAULT_COLOR = (255 << 24) + (150 << 16) + (150 << 8) + 150
 
+
+def find_list_of_display_obj(obj) -> List[Tuple["Base", "Base"]]:
+    """Get displayable object."""
+    
+    list_of_display_obj_colors: List = []
+
+    # find displayValue if available
+    displayValue = obj
+    if hasattr(obj, 'displayValue'):
+        displayValue = getattr(obj, 'displayValue')
+    elif hasattr(obj, '@displayValue'):
+        displayValue = getattr(obj, '@displayValue')
+    # return List of displayValues
+    if not isinstance(displayValue, List):
+        displayValue = [displayValue]
+
+    separated_display_values = separate_display_vals(displayValue)
+    for item in separated_display_values:
+        
+        # read displayObj Colors directly from the obj itself, unless its GisFeature or Revit Element: then keep reading from displayValue
+        if obj.speckle_type.endswith("Feature") or "BuiltElements.Revit" in obj.speckle_type:
+            displayValForColor = item
+        else:
+            displayValForColor = obj
+
+        list_of_display_obj_colors.append((item, displayValForColor))
+
+    return list_of_display_obj_colors
+
+
+def separate_display_vals(displayValue: List) -> List["Base"]:
+    """Return multiple split geometries."""
+
+    from specklepy.objects.geometry import Mesh
+
+    display_objs = []
+    
+    for i, item in enumerate(displayValue):
+        if isinstance(item, Mesh):
+
+            count = 0
+            for _ in item.faces:
+                try:
+                    faces = []
+                    verts = []
+                    colors = []
+
+                    vert_num = item.faces[count]
+
+                    faces.append(vert_num)
+                    faces.extend([ x for x in list(range(vert_num))])
+
+                    for ind in range(vert_num):
+                        face_vert_index = count+1+ind
+                        vert_index = item.faces[face_vert_index]
+
+                        new_vert = item.vertices[3*vert_index : 3*vert_index + 3]
+                        verts.extend(new_vert)
+
+                        if isinstance(item.colors, List) and len(item.colors)>2:
+                            
+                            color = item.colors[vert_index]
+                            colors.append(color)
+                    
+                    count += vert_num+1
+                except IndexError:
+                    continue
+                
+                if len(colors)>0:
+                    mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
+                else:
+                    mesh = Mesh.create(faces= faces, vertices=verts)
+                display_objs.append(mesh)
+
+        elif item is not None:
+            display_objs.append(item)
+
+    return display_objs
+
 def find_display_obj(obj) -> Tuple["Base", "Base"]:
     """Get displayable object."""
 
-    from specklepy.objects.geometry import Point, Line, Arc, Circle, Curve, Polycurve, Mesh, Brep
-
-    displayVal = obj
+    displayValObj = obj
     displayValForColor = obj
 
+    # find displayValue if available
+    displayValue = obj
     if hasattr(obj, 'displayValue'):
-        displayValForColor = getattr(obj, 'displayValue')
+        displayValue = getattr(obj, 'displayValue')
     elif hasattr(obj, '@displayValue'):
-        displayValForColor = getattr(obj, '@displayValue')
-
-    if isinstance(displayValForColor, List):
-        faces = []
-        verts = []
-        colors = []
-        for i, item in enumerate(displayValForColor):
-            if isinstance(item, Mesh):
-                start_vert_count = int(len(verts)/3)
-
-                # only add colors if existing and incoming colors are valid (same length as vertices)
-                if len(colors) == start_vert_count and isinstance(item.colors, List) and len(item.colors)== int(len(item.vertices)/3)>0:
-                    colors.extend(item.colors)
-                else:
-                    colors = []
-
-                verts.extend(item.vertices)
-
-                count = 0
-                for _ in item.faces:
-                    try:
-                        vert_num = item.faces[count]
-                        faces.append(vert_num)
-                        faces.extend([ x+start_vert_count for x in item.faces[count+1 : count+1+vert_num]])
-                        count += vert_num+1
-                    except IndexError:
-                        break
-            elif item is not None:
-                displayValForColor = item
-
-        mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
-        for prop in displayValForColor[0].get_member_names():
-            if prop not in ["colors", "vertices", "faces"]:
-                mesh[prop] = getattr(displayValForColor[0], prop)
-        displayValForColor = mesh
+        displayValue = getattr(obj, '@displayValue')
+    # merge to sigle object, if List
+    if isinstance(displayValue, List):
+        displayValue = get_single_display_object(displayValue)
     
-    displayVal = displayValForColor
-
-    # return to reading color from GisFeature Meshes
+    # read displayObj Colors directly from the obj itself, unless its GisFeature or Revit Element: then keep reading from displayValue
     if not obj.speckle_type.endswith("Feature") and "BuiltElements.Revit" not in obj.speckle_type:
         displayValForColor = obj
+    else:
+        displayValForColor = displayValue
 
-    # return known types as is
-    if (obj.speckle_type.endswith("Feature") or
+    # return convertible types as is
+    if is_convertible(obj):
+        displayValObj = obj
+    else:
+        displayValObj = displayValue
+
+    return displayValObj, displayValForColor
+
+def is_convertible(obj) -> bool:
+    """Check if the object can be converted directly."""
+    
+    from specklepy.objects.geometry import Base, Point, Line, Arc, Circle, Curve, Polycurve, Mesh, Brep
+
+    if ( (isinstance(obj, Base) and obj.speckle_type.endswith("Feature")) or
     isinstance(obj, Point) or
     isinstance(obj, Line) or
     isinstance(obj, Arc) or
@@ -66,10 +126,49 @@ def find_display_obj(obj) -> Tuple["Base", "Base"]:
     isinstance(obj, Polycurve) or
     isinstance(obj, Mesh) or
     isinstance(obj, Brep)):
-        displayVal = obj
+        return True
+    return False
 
-    return displayVal, displayValForColor
+def get_single_display_object(displayValForColor: List) -> "Base":
+    """Get a merged Mesh or a first item from displayValue list."""
 
+    from specklepy.objects.geometry import Mesh
+    
+    faces = []
+    verts = []
+    colors = []
+    for i, item in enumerate(displayValForColor):
+        if isinstance(item, Mesh):
+            start_vert_count = int(len(verts)/3)
+
+            # only add colors if existing and incoming colors are valid (same length as vertices)
+            if len(colors) == start_vert_count and isinstance(item.colors, List) and len(item.colors)== int(len(item.vertices)/3)>0:
+                colors.extend(item.colors)
+            else:
+                colors = []
+
+            verts.extend(item.vertices)
+
+            count = 0
+            for _ in item.faces:
+                try:
+                    vert_num = item.faces[count]
+                    faces.append(vert_num)
+                    faces.extend([ x+start_vert_count for x in item.faces[count+1 : count+1+vert_num]])
+                    count += vert_num+1
+                except IndexError:
+                    break
+        elif item is not None:
+            displayValForColor = item
+
+    mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
+    for prop in displayValForColor[0].get_member_names():
+        if prop not in ["colors", "vertices", "faces"]:
+            mesh[prop] = getattr(displayValForColor[0], prop)
+
+    displayValForColor = mesh
+    return displayValForColor
+    
 def get_display_units(context_list: List["TraversalContext"]) -> None | str:
     """Get units from either of displayable objects."""
 
@@ -121,6 +220,7 @@ def assign_color(obj_display, props) -> None:
     try:
         # prioritize renderMaterials for Meshes & Brep
         if isinstance(obj_display, Mesh) or isinstance(obj_display, Brep): 
+            # print(obj_display.get_member_names())
             if hasattr(obj_display, 'renderMaterial'):
                 color = obj_display['renderMaterial']['diffuse']
             elif hasattr(obj_display, '@renderMaterial'):

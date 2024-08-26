@@ -8,7 +8,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
 
     from pygeoapi.provider.speckle_utils.props_utils import assign_props, assign_missing_props
     from pygeoapi.provider.speckle_utils.converter_utils import assign_geometry
-    from pygeoapi.provider.speckle_utils.display_utils import find_display_obj, assign_display_properties
+    from pygeoapi.provider.speckle_utils.display_utils import find_display_obj, assign_display_properties, find_list_of_display_obj
 
     print(f"Creating features..")
     time1 = datetime.now()
@@ -38,30 +38,72 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
             }
 
             # feature geometry, props and displayProps
-            try: # don't break the code if 1 feature fails
-                coords = []
-                coord_counts = []
+            coords = []
+            coord_counts = []
+            explode_meshes = True
+
+            if explode_meshes is False:
                 obj_display, obj_get_color = find_display_obj(f_base)
-                coords, coord_counts = assign_geometry(self, feature, obj_display)
-            except TypeError as ex:
-                raise ex
-            except Exception as e:
-                print(e)
-                pass
 
-            if len(coords)!=0:
-                all_coords.extend(coords)
-                all_coord_counts.append(coord_counts)
+                try: # don't break the code if 1 feature fails
+                    coords, coord_counts = assign_geometry(self, feature, obj_display)
+                except TypeError as ex:
+                    raise ex
+                except Exception as e:
+                    print(e)
+                    pass
 
-                assign_props(f_base, feature["properties"])
-                # update list of all properties
-                for prop in feature["properties"]:
-                    if prop not in all_props:
-                        all_props.append(prop)
+                if len(coords)!=0:
+                    all_coords.extend(coords)
+                    all_coord_counts.append(coord_counts)
 
-                assign_display_properties(feature, f_base,  obj_get_color)
-                data["features"].append(feature)
+                    assign_props(f_base, feature["properties"])
+                    # update list of all properties
+                    for prop in feature["properties"]:
+                        if prop not in all_props:
+                            all_props.append(prop)
 
+                    assign_display_properties(feature, f_base,  obj_get_color)
+                    data["features"].append(feature)
+                
+            else:
+                list_of_display_obj = find_list_of_display_obj(f_base)
+                
+                for k, vals in enumerate(list_of_display_obj):
+                    obj_display, obj_get_color = vals
+                    
+                    f_fid = len(data["features"]) + 1
+                    feature_new: Dict = {
+                        "type": "Feature",
+                        # "bbox": [-180.0, -90.0, 180.0, 90.0],
+                        "geometry": {},
+                        "displayProperties":{
+                            "object_type": "geometry",
+                        },
+                        "properties": {
+                            "id": f_id + "_" + str(k),
+                            "FID": f_fid,
+                            "speckle_type": item.current.speckle_type.split(":")[-1],
+                        },
+                    }
+                    coords = []
+                    coord_counts = []
+                    
+                    try: # don't break the code if 1 feature fails
+                        coords, coord_counts = assign_geometry(self, feature_new, obj_display)
+                    except TypeError as ex:
+                        raise ex
+                    except Exception as e:
+                        print(e)
+                        pass
+
+                    if len(coords)!=0:
+                        all_coords.extend(coords)
+                        all_coord_counts.append(coord_counts)
+
+                        assign_display_properties(feature_new, f_base,  obj_get_color)
+                        data["features"].append(feature_new)
+            
         assign_missing_props(data["features"], all_props)
     else:
         ####################### create comment features
@@ -81,9 +123,9 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
                 },
             }
 
+            coords = []
+            coord_counts = []
             try: # don't break the code if 1 comment fails
-                coords = []
-                coord_counts = []
                 coords, coord_counts = assign_geometry(self, feature, comment["position"])
             except Exception as e:
                 print(e)

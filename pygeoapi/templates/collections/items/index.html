@@ -159,27 +159,12 @@
           <tbody>
             {% for ft in data.features %}
               <tr>
-                {% if data.get('uri_field') %}
-                  {% set uri_field = data.uri_field %}
-                  <td data-label="{{ uri_field }}">
-                    <a title="{{ ft.properties.get(uri_field) }}">
-                      {{ ft.properties.get(uri_field) }}
-                    </a>
-                  </td>
-                {% elif data.get('title_field') %}
                   {% set title_field = data.title_field %}
                   <td data-label="{{ title_field }}">
-                    <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id}}" target="_blank">
+                    <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id.split('_')[0]}}" target="_blank">
                       {{ ft.properties.get(title_field) | string | truncate( 35 ) }}
                     </a>
                   </td>
-                {% else %}
-                  <td data-label="id">
-                    <a title="{{ ft.id }}">
-                      {{ ft.id | string | truncate( 12 )  }}
-                    </a>
-                  </td>
-                {% endif %}
 
                 {% for prop in props %}
                   <td data-label="{{ prop }}">
@@ -225,8 +210,8 @@
             return new L.circleMarker(latlng)            
         },
         onEachFeature: function (feature, layer) {
-            var url = '{{ data['speckle_project_url'] }}/models/' + feature.id
-            var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td><a href="' + url + '" target="_blank">' + {% if data['title_field'] %} feature['properties']['{{ data['title_field'] }}'] {% else %} feature.id {% endif %} + '</a></span>';
+            var url = '{{ data['speckle_project_url'] }}/models/' + feature.id.split("_")[0]
+            var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td><a href="' + url + '" target="_blank">' + feature['properties']['id'].split("_")[0] + '</a></span>';
             layer.bindPopup(html);
 
             var myFillColor = feature.displayProperties['color'];

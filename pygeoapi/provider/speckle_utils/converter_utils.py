@@ -194,7 +194,6 @@ def convert_mesh_or_brep(f_base: "Base", coords, coord_counts):
             x = vertices[vertex_index * 3]
             y = vertices[vertex_index * 3 + 1]
             z = vertices[vertex_index * 3 + 2]
-            #coords.append([x, y, z])
             local_coords.append([x, y, z])
 
         count += pt_count + 1
