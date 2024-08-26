@@ -23,6 +23,7 @@ Example: [https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/pr
 Supported URL arguments:
  - speckleUrl (text) - required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'
  - limit (positive integer), recommended, as some applications might apply their custom feature limit
+ - preserveAttributes (string), optional. If not set, meshes will be split into separate polygons for better display quality.
  - crsAuthid (text), an authority string e.g. 'epsg:4326'. If set, LAT, LON and NORTHDEGREES arguments will be ignored.
  - lat (number), in range -90 to 90
  - lon (number), in range -180 to 180

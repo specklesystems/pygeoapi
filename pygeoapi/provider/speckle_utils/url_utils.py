@@ -25,6 +25,14 @@ def get_set_url_parameters(self: "SpeckleProvider"):
                 except:
                     pass
                 
+            elif "preserveattributes=" in item:
+                try:
+                    self.preserve_attributes = item.split("preserveattributes=")[1]
+                    if self.preserve_attributes not in ["true", "false"]:
+                        self.preserve_attributes = "false (default)"
+                except:
+                    pass
+                
             elif "crsauthid=" in item:
                 crs_authid = item.split("crsauthid=")[1]
             elif "lat=" in item:

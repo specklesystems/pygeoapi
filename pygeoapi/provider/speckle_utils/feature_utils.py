@@ -40,9 +40,8 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
             # feature geometry, props and displayProps
             coords = []
             coord_counts = []
-            explode_meshes = True
 
-            if explode_meshes is False:
+            if "true" in self.preserve_attributes:
                 obj_display, obj_get_color = find_display_obj(f_base)
 
                 try: # don't break the code if 1 feature fails

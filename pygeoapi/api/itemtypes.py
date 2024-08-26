@@ -576,6 +576,7 @@ def get_collection_items(
     
     content['missing_url'] = content['missing_url_href'] = ""
     content['requested_data_type'] = "polygons (default)"
+    content['preserve_attributes'] = "false (default)"
     content['speckle_url'] = content['speckle_project_url'] = content['crs_authid'] = content['lat'] = content['lon'] = content['north_degrees'] = content['limit'] = "-"
     crsauthid = False
     for item in url_props:
@@ -589,6 +590,10 @@ def get_collection_items(
             content['requested_data_type'] = item.split("datatype=")[1]
             if content['requested_data_type'] not in ["points", "lines", "polygons", "projectcomments"]:
                 content['requested_data_type'] = "polygons (default)"
+        elif "preserveattributes=" in item:
+            content['preserve_attributes'] = item.split("preserveattributes=")[1]
+            if content['preserve_attributes'] not in ["true", "false"]:
+                content['preserve_attributes'] = "false (default)"
         elif "crsauthid=" in item:
             content['crs_authid'] = item.split("crsauthid=")[1]
             crsauthid = True
