@@ -118,6 +118,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
                 "properties": {
                     "messages": [],
                     "text_html": "",
+                    "resource_id": "",
                     "all_attachments": []
                 },
             }
@@ -152,6 +153,7 @@ def assign_comment_data(comments, properties):
         "date": created_date, # e.g. 2024-08-25T13:52:50.562Z
         "text": raw_text,
         "attachments": [attachments_paths],
+        "resource_id": string
         '''
         try:
             formatted_time = datetime.strptime(item["date"].replace("T", " ").replace("Z","").split(".")[0], '%Y-%m-%d %H:%M:%S')
@@ -159,6 +161,11 @@ def assign_comment_data(comments, properties):
             formatted_time = item["date"]
 
         properties["messages"].append(f"Author: {item["author"]}, created: {formatted_time}, text: {item["text"]}, attachments: {[img for img in item["attachments"]]}")
+        
+        try:
+            properties["resource_id"] = item["resource_id"]
+        except:
+            pass # will not be available for replies, only first comment
 
         properties["text_html"] += f"<b>{item["author"]}</b> at {formatted_time}: <br> &emsp; {item["text"]}<br>"
         for img in item["attachments"]:

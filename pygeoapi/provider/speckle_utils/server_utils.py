@@ -114,7 +114,7 @@ def get_comments(client: "SpeckleClient", project_id: str, model_id: str):
             continue
 
         # unpack object
-        comm_id, position, author_name, created_date, raw_text, attachments_paths = comment_data
+        comm_id, position, author_name, created_date, raw_text, attachments_paths, res_id = comment_data
         threads_objs[comm_id] = {
             "position": position, 
             "items": [{
@@ -122,6 +122,7 @@ def get_comments(client: "SpeckleClient", project_id: str, model_id: str):
                 "date": created_date,
                 "text": raw_text,
                 "attachments": attachments_paths,
+                "resource_id": res_id,
                 }]
             }
         replies = thread["replies"]["items"]
@@ -131,7 +132,7 @@ def get_comments(client: "SpeckleClient", project_id: str, model_id: str):
                 continue
 
             # unpack reply 
-            _, position, author_name_reply, created_date_reply, raw_text_reply, attachments_paths_reply = reply_data
+            _, position, author_name_reply, created_date_reply, raw_text_reply, attachments_paths_reply, _ = reply_data
         
             threads_objs[comm_id]["items"].append(
                 {
@@ -165,9 +166,14 @@ def get_info_from_comment(comment: Dict, project_id: str, model_id: str) -> Tupl
             model_found = 0
     '''
     position = [0,0,0]
+    res_id = model_id
     viewer_state = comment["viewerState"]
     if viewer_state is not None: # can be None for Replies
         position: List[float] = viewer_state["ui"]["camera"]["target"]
+        try:
+            res_id = viewer_state["resources"]["request"]["resourceIdString"]
+        except:
+            pass
 
     attachments = comment["text"]["attachments"]
     attachments_paths = []
@@ -180,7 +186,7 @@ def get_info_from_comment(comment: Dict, project_id: str, model_id: str) -> Tupl
 
     #if model_found is False:
     #    return None
-    return comm_id, position, author_name, created_date, raw_text, attachments_paths
+    return comm_id, position, author_name, created_date, raw_text, attachments_paths, res_id
 
 def get_attachment(project_id: str, attachment_id: str, attachment_name: str) -> Path:
 
