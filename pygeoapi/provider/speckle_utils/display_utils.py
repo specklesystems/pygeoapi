@@ -18,13 +18,20 @@ def find_list_of_display_obj(obj) -> List[Tuple["Base", "Base"]]:
     # return List of displayValues
     if not isinstance(displayValue, List):
         displayValue = [displayValue]
+    #print(displayValue)
+    separated_display_values: List[Tuple] = separate_display_vals(displayValue)
+    for item, item_original in separated_display_values:
+        if item is None:
+            continue
+        
+        # for Features, return original convertible object and a first item from displayValue
+        if obj.speckle_type.endswith("Feature"):
+            return([(obj, item_original)])
 
-    separated_display_values = separate_display_vals(displayValue)
-    for item in separated_display_values:
         
         # read displayObj Colors directly from the obj itself, unless its GisFeature or Revit Element: then keep reading from displayValue
         if obj.speckle_type.endswith("Feature") or "BuiltElements.Revit" in obj.speckle_type:
-            displayValForColor = item
+            displayValForColor = item_original
         else:
             displayValForColor = obj
 
@@ -33,7 +40,7 @@ def find_list_of_display_obj(obj) -> List[Tuple["Base", "Base"]]:
     return list_of_display_obj_colors
 
 
-def separate_display_vals(displayValue: List) -> List["Base"]:
+def separate_display_vals(displayValue: List) -> List[Tuple["Base"]]:
     """Return multiple split geometries."""
 
     from specklepy.objects.geometry import Mesh
@@ -75,10 +82,10 @@ def separate_display_vals(displayValue: List) -> List["Base"]:
                     mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
                 else:
                     mesh = Mesh.create(faces= faces, vertices=verts)
-                display_objs.append(mesh)
+                display_objs.append((mesh, item))
 
         elif item is not None:
-            display_objs.append(item)
+            display_objs.append((item, item))
 
     return display_objs
 
