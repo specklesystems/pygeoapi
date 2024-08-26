@@ -119,7 +119,6 @@ def assign_color(obj_display, props) -> None:
     color = DEFAULT_COLOR
 
     try:
-        print(obj_display)
         # prioritize renderMaterials for Meshes & Brep
         if isinstance(obj_display, Mesh) or isinstance(obj_display, Brep): 
             if hasattr(obj_display, 'renderMaterial'):
