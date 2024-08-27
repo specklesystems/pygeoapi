@@ -437,7 +437,7 @@ class SpeckleProvider(BaseProvider):
         create_features(self, context_list, comments, data)
 
         # sort features by height 
-        print(data['features'][:3])
+        
         #if len(data['features']) == len(data['heights']):
         #feat_array = np.array(data['features'])
         #heights_array = np.array(data['heights'])

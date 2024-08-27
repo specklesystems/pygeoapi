@@ -41,6 +41,7 @@ def assign_props(obj: "Base", props: Dict):
     # if Rhino: 
     elif "userStrings" in dynamic_prop_names and isinstance(obj["userStrings"], Base):
         all_prop_names = obj["userStrings"].get_dynamic_member_names()
+
         for prop_name in all_prop_names:
 
             if prop_name in ["id"]:

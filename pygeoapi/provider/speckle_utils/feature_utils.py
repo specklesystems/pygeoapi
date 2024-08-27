@@ -55,13 +55,13 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
                 if len(coords)!=0:
                     all_coords.extend(coords)
                     all_coord_counts.append(coord_counts)
-
+                    
                     assign_props(f_base, feature["properties"])
                     # update list of all properties
                     for prop in feature["properties"]:
                         if prop not in all_props:
                             all_props.append(prop)
-
+                    
                     assign_display_properties(feature, f_base,  obj_get_color)
                     feature["max_height"] = max([c[2] for c in coords])
                     data["features"].append(feature)
@@ -104,7 +104,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
                         assign_display_properties(feature_new, f_base,  obj_get_color)
                         feature_new["max_height"] = max([c[2] for c in coords])
                         data["features"].append(feature_new)
-            
+  
         assign_missing_props(data["features"], all_props)
     else:
         ####################### create comment features
