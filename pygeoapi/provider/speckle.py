@@ -436,6 +436,17 @@ class SpeckleProvider(BaseProvider):
 
         create_features(self, context_list, comments, data)
 
+        # sort features by height 
+        print(data['features'][:3])
+        #if len(data['features']) == len(data['heights']):
+        #feat_array = np.array(data['features'])
+        #heights_array = np.array(data['heights'])
+        #inds = heights_array.argsort()
+        #sorted = feat_array[inds].tolist()
+
+        sorted_list = sorted(data['features'], key=lambda d: d['max_height'])
+        data['features'] = sorted_list
+
         return data
     
     def get_python_path(self) -> str:
