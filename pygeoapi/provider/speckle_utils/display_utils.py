@@ -6,6 +6,10 @@ DEFAULT_COLOR = (255 << 24) + (150 << 16) + (150 << 8) + 150
 
 def find_list_of_display_obj(obj) -> List[Tuple["Base", "Base"]]:
     """Get displayable object."""
+
+    # for Features, return original convertible object and a first item from displayValue
+    if obj.speckle_type.endswith("Feature"):
+        return([(obj, obj.geometry)])
     
     list_of_display_obj_colors: List = []
 
@@ -23,12 +27,7 @@ def find_list_of_display_obj(obj) -> List[Tuple["Base", "Base"]]:
     for item, item_original in separated_display_values:
         if item is None:
             continue
-        
-        # for Features, return original convertible object and a first item from displayValue
-        if obj.speckle_type.endswith("Feature"):
-            return([(obj, item_original)])
-
-        
+                
         # read displayObj Colors directly from the obj itself, unless its GisFeature or Revit Element: then keep reading from displayValue
         if obj.speckle_type.endswith("Feature") or "BuiltElements.Revit" in obj.speckle_type:
             displayValForColor = item_original

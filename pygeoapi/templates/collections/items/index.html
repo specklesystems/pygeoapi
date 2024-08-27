@@ -41,14 +41,14 @@
       <tr>
         <p>
           <div  style="height: fit-content;">
-            <p> Provide Speckle project link as an argument to start exploring, e.g.:  <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828"</a></p>
+            <p> Provide Speckle project link as an argument to start exploring, e.g.:  <a href = "https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828">"https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828"</a></p>
           </div>
         </p>
       </tr>
 
       {% else %}
       <details>
-      <summary>Details of the current Speckle model</summary>
+      <summary><b>Details of the current Speckle model</b></summary>
         
       <section id="url_parameters">
         {% if data['features'] %}
@@ -61,14 +61,27 @@
           <p>{% trans %}Note: if Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
         </div>
 
+        <div class="row">
         <div class="col-md-6 col-sm-12">
-          <div class="row">
-            <h3>{% trans %}Speckle model data  {% endtrans %}</h3>      
+            <b>{% trans %}Speckle model data  {% endtrans %}</b>      
             <div style="overflow-x: scroll;">
               <table class="table table-bordered">
                 <thead>
                 </thead>
                 <tbody>
+                  <tr>
+                    <td >Project name:</td>
+                    <td>{{ data['project'] }}</td>
+                  </tr>
+                  <tr>
+                    <td >Model name:</td>
+                    <td>{{ data['model'] }}</td>
+                  </tr>
+                  <tr>
+                    <td >Last version created:</td>
+                    <td>{{ data['model_last_version_date'] }}</td>
+                  </tr>
+
 
                     <tr>
                       <td >Coordinate Reference System:</td>
@@ -78,16 +91,10 @@
                 </tbody>
                 </table>
             </div>
-          </div>
         </div>
         
-        <div class="row">
-          <p> </p>
-        </div>
-
         <div class="col-md-6 col-sm-12">
-          <div class="row">
-            <h3>{% trans %}URL parameters  {% endtrans %}</h3>
+            <b>{% trans %}URL parameters  {% endtrans %}</b>
             <div style="overflow-x: scroll;">
               <table class="table table-bordered">
                 <thead>
@@ -134,8 +141,12 @@
                 </tbody>
                 </table>
             </div>
-          </div>
         </div>
+        
+        <div class="row">
+          <p> </p>
+        </div>
+
       
       </section>
 
@@ -146,7 +157,7 @@
         </div>
 
         <div class="row">
-          <h3>{% trans %}Features in this model {% endtrans %}</h3>    
+          <b>{% trans %}Features in this model {% endtrans %}</b>    
           <div style="overflow-x: scroll;">
             {% set props = [] %}
             <table class="table table-striped table-bordered">
@@ -267,22 +278,22 @@
       </tr>
       <tr>
         <p>
-          1. QGIS polygon features: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons&preserveAttributes=true">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons&preserveAttributes=true"</a>
+          1. QGIS polygon features: <a href = "https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons&preserveAttributes=true">"https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons&preserveAttributes=true"</a>
         </p>
       </tr>
       <tr>
         <p>
-          2. QGIS point features: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/8c49788b1f&datatype=points">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/8c49788b1f&datatype=points"</a>
+          2. QGIS point features: <a href = "https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/8c49788b1f&datatype=points&preserveAttributes=true">"https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/8c49788b1f&datatype=points&preserveAttributes=true"</a>
         </p>
       </tr>
       <tr>
         <p>
-          2. Rhino building masses: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828"</a>
+          2. Rhino building masses: <a href = "https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828">"https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828"</a>
         </p>
       </tr>
       <tr>
         <p>
-          3. Speckle project comments: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments"</a>
+          3. Speckle project comments: <a href = "https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments">"https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments"</a>
         </p>
       </tr>
       
@@ -291,7 +302,10 @@
   
       <tr>
         <p>
-          We are very curious to <a href = "https://speckle.community/invites/qxEmQb1QcM" target="_blank">hear about your use case and your feedback!</a>
+          <b>Note: this is not a production server.</b> It is still work in progress, 
+          and we are very curious 
+          to <a href = "https://speckle.community/invites/qxEmQb1QcM" target="_blank">hear about your use case and your feedback</a>
+          so we can make it better.
         </p>
       </tr>
     </div>

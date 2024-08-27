@@ -30,7 +30,7 @@ Use the following URL parameters to construct a link that provides Speckle data 
  - northDegrees (number), in range -180 to 180
 If GIS-originated Speckle model is loaded, no location arguments are needed.  
 
-Example: [http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828](http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828)
+Example: [https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828](https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828)
 
 
 ### Add Speckle Feature Layer to a web-based map
@@ -102,8 +102,4 @@ pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 pygeoapi serve
 
 ```
-
-Example URL:
-http://localhost:5000/?limit=10000&speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&dataType=polygons
-
 

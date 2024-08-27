@@ -380,6 +380,7 @@ class SpeckleProvider(BaseProvider):
 
         speckle_data["project"] = stream['name']
         speckle_data["model"] = branch['name']
+        speckle_data["model_last_version_date"] = datetime.strptime(commit['createdAt'].replace("T", " ").replace("Z","").split(".")[0], '%Y-%m-%d %H:%M:%S')
         speckle_data["model_id"] = wrapper.model_id
         speckle_data["extent"] = self.extent
 
