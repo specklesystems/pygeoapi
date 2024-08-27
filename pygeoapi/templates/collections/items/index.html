@@ -26,172 +26,278 @@
       <p> </p>
     </div>
 
-    {% if data['missing_url'] %}
-    <div  style="height: fit-content;">
-      <p>{{ data['missing_url'] }} <a href = "{{ data['missing_url_href'] }}/">{{ data['missing_url_href'] }}</a></p>
-    </div>
-    {% endif %}
-
     <div class="row">
-      <p>Description How To</p>
-    </div>
-  </section>
+      <tr>
+        <p>
+          This is the test deployment of the OGC API server for public Speckle projects. 
+          It allows you to share your Speckle model as geospatial data in the format of 
+          OGC API Features / Web Feature Service, so it can be natively added to a QGIS, ArcGIS 
+          or Civil3D project, or embedded into a web map using Leaflet, OpenLayers or other libraries. 
+          You can find more guidelines and examples on our <a href = "https://github.com/specklesystems/pygeoapi" target="_blank">GitHub page</a>. 
+        </p>
+      </tr>
+      
+      {% if data['missing_url'] %}
+      <tr>
+        <p>
+          <div  style="height: fit-content;">
+            <p> Provide Speckle project link as an argument to start exploring, e.g.:  <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828"</a></p>
+          </div>
+        </p>
+      </tr>
 
-  
-  
-  <details>
-  <summary>Current model</summary>
-    
-  <section id="url_parameters">
-    {% if data['features'] %}
-    
-    <div class="row">
-      <p> </p>
-    </div>
-    
-    <div class="row">
-      <p>{% trans %}Note: if Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
-    </div>
-
-    <div class="col-md-6 col-sm-12">
-      <div class="row">
-        <h3>{% trans %}Speckle model data  {% endtrans %}</h3>      
-        <div style="overflow-x: scroll;">
-          <table class="table table-bordered">
-            <thead>
-            </thead>
-            <tbody>
-
-                <tr>
-                  <td >Coordinate Reference System:</td>
-                  <td>{{ data['model_crs'] }}</td>
-                </tr>
-
-            </tbody>
-            </table>
+      {% else %}
+      <details>
+      <summary>Details of the current Speckle model</summary>
+        
+      <section id="url_parameters">
+        {% if data['features'] %}
+        
+        <div class="row">
+          <p> </p>
         </div>
-      </div>
-    </div>
-    
-    <div class="row">
-      <p> </p>
-    </div>
-
-    <div class="col-md-6 col-sm-12">
-      <div class="row">
-        <h3>{% trans %}URL parameters  {% endtrans %}</h3>
-        <div style="overflow-x: scroll;">
-          <table class="table table-bordered">
-            <thead>
-            </thead>
-            <tbody>
-
-                <tr>
-                  <td >Speckle URL ('speckleurl')</td>
-                    <td>
-                      <a href="{{ data['speckle_url'] }}">
-                        {{ data['speckle_url'] }}
-                      </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Requested data type ('datatype')</td>
-                  <td>{{ data['requested_data_type'] }}</td>
-                </tr>
-                <tr>
-                  <td>Prioritize object attributes over display quality ('preserveattributes')</td>
-                  <td>{{ data['preserve_attributes'] }}</td>
-                </tr>
-                <tr>
-                  <td >Coordinate Reference System ID ('crsauthid')</td>
-                  <td>{{ data['crs_authid'] }}</td>
-                </tr>
-                <tr>
-                  <td>Latitide ('lat')</td>
-                  <td>{{ data['lat'] }}</td>
-                </tr>
-                <tr>
-                  <td>Longitude ('lon')</td>
-                  <td>{{ data['lon'] }}</td>
-                </tr>
-                <tr>
-                  <td >Angle to True North, in degrees ('northdegrees')</td>
-                  <td>{{ data['north_degrees'] }}</td>
-                </tr>
-                <tr>
-                  <td >Feature limit ('limit')</td>
-                  <td>{{ data['limit'] }}</td>
-                </tr>
-
-            </tbody>
-            </table>
+        
+        <div class="row">
+          <p>{% trans %}Note: if Speckle model location data is available, the relevant URL parameters will be ignored. If neither model nor URL parameters specify the location, model will be placed randomly. {% endtrans %}</p>
         </div>
-      </div>
-    </div>
-  
-  </section>
 
-  <section id="items">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <h3>{% trans %}Speckle model data  {% endtrans %}</h3>      
+            <div style="overflow-x: scroll;">
+              <table class="table table-bordered">
+                <thead>
+                </thead>
+                <tbody>
 
-    <div class="row">
-      <p> </p>
-    </div>
+                    <tr>
+                      <td >Coordinate Reference System:</td>
+                      <td>{{ data['model_crs'] }}</td>
+                    </tr>
 
-    <div class="row">
-      <h3>{% trans %}Features in this model {% endtrans %}</h3>    
-      <div style="overflow-x: scroll;">
-        {% set props = [] %}
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              {% if data.get('uri_field') %}
-                {% set uri_field = data.uri_field %}
-                <th>{{ uri_field }}</th>
-              {% elif data.get('title_field') %}
-                {% set title_field = data.title_field %}
-                <th>{{ title_field }}</th>
-              {% else %}
-                <th>id</th>
-              {% endif %}
+                </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <p> </p>
+        </div>
 
-              {% for k in data['features'][0]['properties'].keys() %}
-                {% if k not in [data.id_field, data.title_field, data.uri_field, 'extent'] %}
-                  {% set props = props.append(k) %}
-                  <th>{{ k | striptags }}</th>
-                {% endif %}
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for ft in data.features %}
-              <tr>
-                  {% set title_field = data.title_field %}
-                  <td data-label="{{ title_field }}">
-                    <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id.split('_')[0]}}" target="_blank">
-                      {{ ft.properties.get(title_field) | string | truncate( 35 ) }}
-                    </a>
-                  </td>
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <h3>{% trans %}URL parameters  {% endtrans %}</h3>
+            <div style="overflow-x: scroll;">
+              <table class="table table-bordered">
+                <thead>
+                </thead>
+                <tbody>
 
-                {% for prop in props %}
-                  <td data-label="{{ prop }}">
-                    {{ ft.properties.get(prop, '') | string | truncate( 35 ) }}
-                  </td>
+                    <tr>
+                      <td >Speckle URL ('speckleurl')</td>
+                        <td>
+                          <a href="{{ data['speckle_url'] }}">
+                            {{ data['speckle_url'] }}
+                          </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Requested data type ('datatype')</td>
+                      <td>{{ data['requested_data_type'] }}</td>
+                    </tr>
+                    <tr>
+                      <td>Prioritize object attributes over display quality ('preserveattributes')</td>
+                      <td>{{ data['preserve_attributes'] }}</td>
+                    </tr>
+                    <tr>
+                      <td >Coordinate Reference System ID ('crsauthid')</td>
+                      <td>{{ data['crs_authid'] }}</td>
+                    </tr>
+                    <tr>
+                      <td>Latitide ('lat')</td>
+                      <td>{{ data['lat'] }}</td>
+                    </tr>
+                    <tr>
+                      <td>Longitude ('lon')</td>
+                      <td>{{ data['lon'] }}</td>
+                    </tr>
+                    <tr>
+                      <td >Angle to True North, in degrees ('northdegrees')</td>
+                      <td>{{ data['north_degrees'] }}</td>
+                    </tr>
+                    <tr>
+                      <td >Feature limit ('limit')</td>
+                      <td>{{ data['limit'] }}</td>
+                    </tr>
+
+                </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      
+      </section>
+
+      <section id="items">
+
+        <div class="row">
+          <p> </p>
+        </div>
+
+        <div class="row">
+          <h3>{% trans %}Features in this model {% endtrans %}</h3>    
+          <div style="overflow-x: scroll;">
+            {% set props = [] %}
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  {% if data.get('uri_field') %}
+                    {% set uri_field = data.uri_field %}
+                    <th>{{ uri_field }}</th>
+                  {% elif data.get('title_field') %}
+                    {% set title_field = data.title_field %}
+                    <th>{{ title_field }}</th>
+                  {% else %}
+                    <th>id</th>
+                  {% endif %}
+
+                  {% for k in data['features'][0]['properties'].keys() %}
+                    {% if k not in [data.id_field, data.title_field, data.uri_field, 'extent'] %}
+                      {% set props = props.append(k) %}
+                      <th>{{ k | striptags }}</th>
+                    {% endif %}
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for ft in data.features %}
+                  <tr>
+                      {% set title_field = data.title_field %}
+                      <td data-label="{{ title_field }}">
+                        <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id.split('_')[0]}}" target="_blank">
+                          {{ ft.properties.get(title_field) | string | truncate( 35 ) }}
+                        </a>
+                      </td>
+
+                    {% for prop in props %}
+                      <td data-label="{{ prop }}">
+                        {{ ft.properties.get(prop, '') | string | truncate( 35 ) }}
+                      </td>
+                    {% endfor %}
+
+                  </tr>
                 {% endfor %}
-
-              </tr>
-            {% endfor %}
-          </tbody>
-          </table>
-      </div>
-    </div>
-    {% else %}
-    <div class="row">
-        <p>{% trans %}No items{% endtrans %}</p>
-    </div>
+              </tbody>
+              </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <p>{% trans %}No items{% endtrans %}</p>
+        </div>
+        {% endif %}
+      </section>
+      
+      
+    </details>
+    
+    <tr><p></p></tr>
     {% endif %}
-  </section>
+
+
+
+
+
+      <tr>
+        <p>
+          You can use the current link to access OGC API dataset in your preferred software, 
+          as well as explore the data in the browser and share with others. URL should start with 'https://geo.speckle.systems/?' 
+          followed by required and optional parameters. Parameters should be separated with '&' symbol. 
+          Use the following URL parameters to construct a link that provides Speckle data with your preferred settings: 
+        </p>
+      </tr>
+      <tr>
+        <i>- speckleUrl</i><p> text, required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/344f803f81/models/5582ab673e'
+        </p>
+      </tr>
+      <tr>
+        <i>- dataType</i><p> text, optional, choose from: points, lines, polygons or projectcomments
+        </p>
+      </tr>
+      <tr>
+        <i>- limit</i><p> positive integer, recommended, as some applications might apply their custom feature limit
+        </p>
+      </tr>
+      <tr>
+        <i>- preserveAttributes</i><p> string, optional, choose from: true, false. If not set, meshes will be split into separate polygons for better display quality.
+        </p>
+      </tr>
+      <tr>
+        <i>- crsAuthid</i><p> text, an authority string e.g. 'epsg:4326'. If set, LAT, LON and NORTHDEGREES arguments will be ignored.
+        </p>
+      </tr>
+      <tr>
+        <i>- lat</i><p> number, in range -90 to 90
+        </p>
+      </tr>
+      <tr>
+        <i>- lon</i><p> number, in range -180 to 180
+        </p>
+      </tr>
+      <tr>
+        <i>- northDegrees</i><p> number, in range -180 to 180
+        </p>
+      </tr>
+      <tr>
+        <p>
+          If GIS-originated Speckle model is loaded, no location arguments are needed.  
+        </p>
+      </tr>
+      <tr>
+      </tr>
+      
+  </tr><p></p>
+  <tr>
+
+      <tr>
+        <p>
+          Here are some examples: 
+        </p>
+      </tr>
+      <tr>
+        <p>
+          1. QGIS polygon features: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons&preserveAttributes=true">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons&preserveAttributes=true"</a>
+        </p>
+      </tr>
+      <tr>
+        <p>
+          2. QGIS point features: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/8c49788b1f&datatype=points">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/8c49788b1f&datatype=points"</a>
+        </p>
+      </tr>
+      <tr>
+        <p>
+          2. Rhino building masses: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828"</a>
+        </p>
+      </tr>
+      <tr>
+        <p>
+          3. Speckle project comments: <a href = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments">"http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments"</a>
+        </p>
+      </tr>
+      
+    </tr><p></p>
+    <tr>
   
-</details>
+      <tr>
+        <p>
+          We are very curious to <a href = "https://speckle.community/invites/qxEmQb1QcM" target="_blank">hear about your use case and your feedback!</a>
+        </p>
+      </tr>
+    </div>
+  </section>
+ 
+  
 {% endblock %}
 
 {% block extrafoot %}

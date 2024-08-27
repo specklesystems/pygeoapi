@@ -619,8 +619,7 @@ def get_collection_items(
                 content['limit'] = f"Invalid input, must be integer: {item.split('limit=')[1]}"
     
     if content['speckle_url'] == "-":
-        content['missing_url'] = "Provide Speckle project link as an argument to start exploring, e.g.: "
-        content['missing_url_href'] = "http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c"
+        content['missing_url'] = "true"
 
     if crsauthid:
         content['lat'] += " (not applied)"

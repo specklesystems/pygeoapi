@@ -18,18 +18,19 @@ Demo page: https://geo.speckle.systems/
 
 ### How to construct a valid URL to get georeferenced Speckle layer
 URL should start with 'https://geo.speckle.systems/?' followed by required and optional parameters. Parameters should be separated with '&' symbol. 
-Example: [https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c/&lat=25&lon=0&northDegrees=40&dataType=polygons](https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c/&lat=25&lon=0&northDegrees=40&dataType=polygons)
 
-Supported URL arguments:
- - speckleUrl (text) - required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'
+Use the following URL parameters to construct a link that provides Speckle data with your preferred settings::
+ - speckleUrl (text), required, should contain path to a specific Model in Speckle Project, e.g. 'https://app.speckle.systems/projects/55a29f3e9d/models/2d497a381d'
+ - dataType (text), optional, choose from: points, lines, polygons or projectcomments
  - limit (positive integer), recommended, as some applications might apply their custom feature limit
- - preserveAttributes (string), optional. If not set, meshes will be split into separate polygons for better display quality.
+ - preserveAttributes (string), optional, choose from: true, false. If not set, meshes will be split into separate polygons for better display quality.
  - crsAuthid (text), an authority string e.g. 'epsg:4326'. If set, LAT, LON and NORTHDEGREES arguments will be ignored.
  - lat (number), in range -90 to 90
  - lon (number), in range -180 to 180
  - northDegrees (number), in range -180 to 180
- - dataType (text), one of: points, lines, polygons or projectcomments
-If GIS-originated Speckle model is loaded, no additional arguments are needed, except SPECKLEURL.  
+If GIS-originated Speckle model is loaded, no location arguments are needed.  
+
+Example: [http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828](http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/64753f52b7/models/338b386787&lat=-0.031405&lon=109.335828)
 
 
 ### Add Speckle Feature Layer to a web-based map
