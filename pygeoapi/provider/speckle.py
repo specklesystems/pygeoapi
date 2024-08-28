@@ -75,8 +75,8 @@ class SpeckleProvider(BaseProvider):
             # )
 
         from subprocess import run
-        #from pygeoapi.provider.speckle_utils.patch.patch_specklepy import patch_specklepy
-        r'''
+        from pygeoapi.provider.speckle_utils.patch.patch_specklepy import patch_specklepy
+
         try:
             import specklepy
 
@@ -111,8 +111,8 @@ class SpeckleProvider(BaseProvider):
                 print(completed_process.stderr)
                 raise Exception(m)
 
-        #patch_specklepy()
-        '''
+            patch_specklepy()
+
         
         # assign global values
         self.url: str = self.data # to store the value and check if self.data has changed
@@ -127,8 +127,8 @@ class SpeckleProvider(BaseProvider):
         self.requested_data_type: str = "polygons (default)" # points, lines, polygons, projectcomments
         self.preserve_attributes: str = "false (default)"
 
-        self.lat: float = 51.52486388756923
-        self.lon: float = 0.1621445437168942
+        self.lat: float = 48.76755913928929 #51.52486388756923
+        self.lon: float = 11.408741923664028 #0.1621445437168942
         self.north_degrees: float = 0
         self.extent = [-180,-90,180,90]
 
@@ -444,9 +444,13 @@ class SpeckleProvider(BaseProvider):
         #heights_array = np.array(data['heights'])
         #inds = heights_array.argsort()
         #sorted = feat_array[inds].tolist()
-
+        time1 = datetime.now()
         sorted_list = sorted(data['features'], key=lambda d: d['max_height'])
+        for i, _ in enumerate(sorted_list):
+            sorted_list[i]["properties"]["FID"] = i+1 
         data['features'] = sorted_list
+        time2 = datetime.now()
+        print(f"Sorting time: {(time2-time1).total_seconds()}")
 
         return data
     
