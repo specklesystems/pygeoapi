@@ -64,7 +64,7 @@ Javascript-based mapping libraries can load speckle data as JSON through followi
     }
 ```
 
-Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basemap tiles). The following example assumes <div id="items-map"/> html element:
+Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basemap tiles). The following example assumes an html div element with id="items-map":
 
 ```html
     <script>
