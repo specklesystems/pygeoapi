@@ -36,7 +36,65 @@ Example: [https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/pr
 
 ### Add Speckle Feature Layer to a web-based map
 
-Check out the examples in 'speckle_demos' folder for Leaflet and OpenLayers implementation.
+Javascript-based mapping libraries can load speckle data as JSON through following function: 
+
+```javascript
+    async function loadSpeckleData() => {
+        const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
+            headers: {
+                'Accept': 'application/geo+json'
+            }
+        }).then(response => response.json());
+    }
+            
+```
+
+Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basemap tiles). The following example assumes <div id="items-map"/> html element:
+
+```javascript
+    <script>
+        var map = L.map('items-map').setView([ 45 ,  -75 ], 5);
+        map.addLayer(new L.TileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 22,
+                attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a> &copy; Data: <a href="https://speckle.systems/">Speckle Systems</a>'
+            }
+        ));
+        loadSpeckleData();
+
+        async function loadSpeckleData() => {
+            const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
+                headers: {
+                    'Accept': 'application/geo+json'
+                }
+            }).then(response => response.json());
+            
+            speckle_layer = L.geoJSON(speckle_data, {
+                filter: (feature) => {
+                return feature.displayProperties["object_type"] == "geometry"
+                },
+                pointToLayer: (feature, latlng) => {
+                    return new L.circleMarker(latlng)            
+                },
+                onEachFeature: function (feature, layer) {
+                    var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td></span>';
+                    layer.bindPopup(html);
+                    layer.setStyle({
+                        fillColor: feature.displayProperties['color'],
+                        color: myFillColor,
+                        fillOpacity: 0.8,
+                        weight: feature.displayProperties['lineWidth'],
+                        radius: feature.displayProperties['radius']
+                    });
+                }
+            });
+            speckle_layer.addTo(map);
+            map.fitBounds(speckle_layer.getBounds())
+            };
+        </script>
+```
+
+Check out 'speckle_demos' folder for more Leaflet and OpenLayers implementation.
 
 ### Add Speckle WFS layer in QGIS
 1. Add new WFS Layer
