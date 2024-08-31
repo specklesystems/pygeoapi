@@ -57,9 +57,7 @@ Javascript-based mapping libraries can load speckle data as JSON through followi
     async function loadSpeckleData() => {
         var speckle_model_url = 'https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons';
         const speckle_data = await fetch(speckle_model_url, {
-            headers: {
-                'Accept': 'application/geo+json'
-            }
+            headers: {'Accept': 'application/geo+json'}
         }).then(response => response.json());
     }
 ```
@@ -81,21 +79,11 @@ Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basema
             var speckle_model_url = 'https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons';
             
             const speckle_data = await fetch(speckle_model_url, {
-                headers: {
-                    'Accept': 'application/geo+json'
-                }
+                headers: {'Accept': 'application/geo+json'}
             }).then(response => response.json());
             
             speckle_layer = L.geoJSON(speckle_data, {
-                filter: (feature) => {
-                return feature.displayProperties["object_type"] == "geometry"
-                },
-                pointToLayer: (feature, latlng) => {
-                    return new L.circleMarker(latlng)            
-                },
                 onEachFeature: function (feature, layer) {
-                    var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td></span>';
-                    layer.bindPopup(html);
                     layer.setStyle({
                         fillColor: feature.displayProperties['color'],
                         color: myFillColor,
