@@ -49,9 +49,11 @@ Enable the URL parameter "&preserveAttributes=true". It is disabled by default d
 
 Report any other issues here or on our [Community Forum](https://speckle.community/).
 
-### Add Speckle Feature Layer to a web-based map
+## Add Speckle Feature Layers to web-based maps and desktop apps
 
-Javascript-based mapping libraries can load speckle data as JSON through following function: 
+### Add Speckle layer in Javascript
+
+Javascript-based mapping libraries can load speckle data as JSON using the following function: 
 
 ```javascript
     async function loadSpeckleData() => {
