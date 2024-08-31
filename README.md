@@ -55,18 +55,18 @@ Javascript-based mapping libraries can load speckle data as JSON through followi
 
 ```javascript
     async function loadSpeckleData() => {
-        const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
+        var speckle_model_url = 'https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons';
+        const speckle_data = await fetch(speckle_model_url, {
             headers: {
                 'Accept': 'application/geo+json'
             }
         }).then(response => response.json());
     }
-            
 ```
 
 Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basemap tiles). The following example assumes <div id="items-map"/> html element:
 
-```javascript
+```html
     <script>
         var map = L.map('items-map').setView([ 45 ,  -75 ], 5);
         map.addLayer(new L.TileLayer(
@@ -78,7 +78,9 @@ Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basema
         loadSpeckleData();
 
         async function loadSpeckleData() => {
-            const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons', {
+            var speckle_model_url = 'https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons';
+            
+            const speckle_data = await fetch(speckle_model_url, {
                 headers: {
                     'Accept': 'application/geo+json'
                 }
@@ -103,10 +105,11 @@ Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basema
                     });
                 }
             });
+
             speckle_layer.addTo(map);
             map.fitBounds(speckle_layer.getBounds())
-            };
-        </script>
+        };
+    </script>
 ```
 
 Check out 'speckle_demos' folder for more Leaflet and OpenLayers implementation.
