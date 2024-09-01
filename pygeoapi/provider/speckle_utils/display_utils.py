@@ -51,10 +51,11 @@ def separate_display_vals(displayValue: List) -> List[Tuple["Base"]]:
     
     for i, item in enumerate(displayValue):
         if isinstance(item, Mesh):
-
             count = 0
+            all_count = len(item.faces)
+
             for _ in item.faces:
-                try:
+                if count < all_count:
                     faces = []
                     verts = []
                     colors = []
@@ -71,20 +72,16 @@ def separate_display_vals(displayValue: List) -> List[Tuple["Base"]]:
                         new_vert = item.vertices[3*vert_index : 3*vert_index + 3]
                         verts.extend(new_vert)
 
-                        if isinstance(item.colors, List) and len(item.colors)>2:
-                            
+                        if isinstance(item.colors, List) and len(item.colors) > vert_index:
                             color = item.colors[vert_index]
                             colors.append(color)
                     
                     count += vert_num+1
-                except IndexError:
-                    continue
-                
-                if len(colors)>0:
-                    mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
-                else:
-                    mesh = Mesh.create(faces= faces, vertices=verts)
-                display_objs.append((mesh, item))
+                    if len(colors)>0:
+                        mesh = Mesh.create(faces= faces, vertices=verts, colors=colors)
+                    else:
+                        mesh = Mesh.create(faces= faces, vertices=verts)
+                    display_objs.append((mesh, item))
 
         elif item is not None:
             display_objs.append((item, item))
