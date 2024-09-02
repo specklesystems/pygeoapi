@@ -41,7 +41,6 @@
                      'Accept': 'application/geo+json'
                    }
                 }).then(response => response.json());
-                console.log(speckle_data)
 
                 var speckle_features = []
                 for (let i = 0; i < speckle_data.features.length; i++) {
