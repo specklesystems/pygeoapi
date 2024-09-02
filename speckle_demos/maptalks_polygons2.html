@@ -31,7 +31,7 @@
       
       (async () => {
                 //const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments', {
-                //var speckle_url = 'http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c&limit=1000000&datatype=polygons&preserveattributes=true';
+                //var speckle_url = 'http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c&limit=1000000&datatype=polygons&preserveattributes=false';
                 // https://app.speckle.systems/projects/5feae56049/models/01c4183677
                 var speckle_url = 'http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/01c4183677&limit=1000000&datatype=polygons&preserveattributes=true';
                 
@@ -50,7 +50,7 @@
 
                     if (feature.geometry.type.includes("Polygon")) {
 
-                        // check orientation of each PolygonPart
+                        // check orientation of each PolygonPart, if vertical - shift points slightly
                         for (let p = 0; p < coords.length; p++) {
                             for (let c = 0; c < coords[p].length; c++) {
 
@@ -68,9 +68,11 @@
 
                                 createdPolygon = false;
                                 if (-0.01 < sum_orientation && sum_orientation <0.01){
+                                    coords[p][c][0][0] += 0.0000001;
+                                    coords[p][c][0][1] += 0.0000001;
+                                    coords[p][c][1][0] -= 0.0000001;
+                                    coords[p][c][1][1] -= 0.0000001;
                                     if(polygon_pts.length==3) {
-                                        coords[p][c][0][0] += 0.0000001;
-                                        coords[p][c][0][1] += 0.0000001;
                                         createdPolygon = true;
                                         
                                         speckle_features.push(
@@ -88,10 +90,6 @@
                                         );
                                     }
                                     else if (polygon_pts.length==4) {
-                                        coords[p][c][0][0] += 0.0000001;
-                                        coords[p][c][0][1] += 0.0000001;
-                                        coords[p][c][3][0] += 0.0000001;
-                                        coords[p][c][3][1] += 0.0000001;
                                         createdPolygon = true;
                                         
                                         speckle_features.push(
