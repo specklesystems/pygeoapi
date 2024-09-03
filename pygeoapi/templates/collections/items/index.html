@@ -26,6 +26,8 @@
 
     <div id="map2d" style="height: 80vh;"></div>
     <div id="map3d" style="height: 0vh;"></div>
+    
+    <div style="position: 'absolute'; left: x; top: y"></div>
     {% else %}
 
     <div class="form-group" >
@@ -463,6 +465,17 @@
           return `${properties.speckle_type}: ${properties.id}`
         }
       }
+      // Callback to populate the default tooltip with content
+      function getTooltip({object}) {
+        return object && {
+          html: getDisplayText(object.properties),
+          style: {
+            backgroundColor: 'rgb(255,255,255)',
+            color: 'rgb(0,0,0)',
+            fontSize: '0.9em'
+          }
+        };
+      }
 
       function initialize3d() {
           maptilersdk.config.apiKey = '{{ config["server"]["map"]["key"] }}'; 
@@ -583,8 +596,6 @@
                   // Interactive props
                   pickable: true,
                   autoHighlight: true,
-                  onClick: info =>
-                    info.object && alert(`${getDisplayText(info.object.properties)}`)
               }),
               
               new deck.IconLayer({
@@ -599,7 +610,8 @@
                   getSize: 40,
                   pickable: true
                 })
-              ]
+              ],
+              getTooltip
           });
     }
 
