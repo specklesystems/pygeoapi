@@ -1,0 +1,3 @@
+geo.speckle.systems {
+	reverse_proxy localhost:8000
+}
