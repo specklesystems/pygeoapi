@@ -448,21 +448,24 @@
           value = [ parseInt(col[0])*0.95, parseInt(col[1])*0.95, parseInt(col[2])*0.95, parseInt(col[3]) ];
           return value;
           }
-      function getMessagesNumber(messages)
+      function getMessagesNumber(properties)
         { 
-          if (messages == null) {return 1}
+          if (properties == null || properties.messages == null) {return 1}
           else 
           {
-            return messages.length
+            return properties.messages.length
           }
         }
       function getDisplayText(properties)
       {
-        if (properties.text_html != null){
+        if (properties != null && properties.text_html != null){
           return properties.text_html
         }
-        else{
+        else if (properties != null && properties.speckle_type != null && properties.id != null){
           return `${properties.speckle_type}: ${properties.id}`
+        }
+        else{
+          return ``
         }
       }
       // Callback to populate the default tooltip with content
@@ -476,6 +479,26 @@
           }
         };
       }
+      function createSVGIcon(n) {
+        const label = n < 10 ? n.toString() : '10+';
+        return `\
+        <svg width="80" height="80" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="rgb(10,132,255)" stroke="rgb(200,200,200)" stroke-width="2"/>
+          <text x="12" y="12" fill="#fff" text-anchor="middle" alignment-baseline="middle" font-family="verdana" font-size="8">${label}</text>
+        </svg>`;
+      }
+
+      // Note that a xml string cannot be directly embedded in a data URL
+      // it has to be either escaped or converted to base64.
+      function svgToDataUrl(svg) {
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      }
+
+      // You may need base64 encoding if the SVG contains certain special characters
+      function svgToDataUrlBase64(svg) {
+        return `data:image/svg+xml;base64,${btoa(svg)}`;
+      }
+
 
       function initialize3d() {
           maptilersdk.config.apiKey = '{{ config["server"]["map"]["key"] }}'; 
@@ -565,7 +588,13 @@
           }
           
           var extent = speckle_data["extent"];
-          speckle_data.features = speckle_features;
+          speckle_data.features = speckle_features;          
+          speckle_geometries = [];
+          speckle_features.forEach((element, index, array) => {
+            new_geometry = element;
+            new_geometry.coordinates = element.geometry.coordinates;
+            speckle_geometries.push(new_geometry);
+          });
 
           // Create deck.gl map
           const deckgl = new deck.DeckGL({
@@ -591,7 +620,7 @@
                   getFillColor: f => rgbaToArgbList(f.displayProperties.color),
                   getLineWidth: f => f.displayProperties.lineWidth,
                   getLineColor: f => rgbaToArgbListDarker(f.displayProperties.color),
-                  getPointRadius:  f => f.displayProperties.radius * getMessagesNumber(f.properties.messages),
+                  getPointRadius: 0, //f => f.displayProperties.radius * getMessagesNumber(f.properties),
 
                   // Interactive props
                   pickable: true,
@@ -599,17 +628,19 @@
               }),
               
               new deck.IconLayer({
-                  id: 'IconLayer',
-                  data: speckle_data,
-                  getIcon: d => ({
-                    url: 'https://w7.pngwing.com/pngs/976/237/png-transparent-blue-location-pin-icon-thumbnail.png',
-                    width: 128,
-                    height: 128
-                  }),
-                  getPosition: f => f.coordinates,
-                  getSize: 40,
-                  pickable: true
-                })
+                id: 'IconLayer',
+                data: speckle_geometries,
+                // getColor: d => [Math.sqrt(getMessagesNumber(d.properties)), 140, 0],
+                
+                getIcon: d => ({
+                  url: svgToDataUrl(createSVGIcon( getMessagesNumber(d.properties).toString() )), //'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
+                  width: 128,
+                  height: 128
+                }),
+                getPosition: d => d.coordinates[0],
+                getSize: f => 40 * Math.pow(getMessagesNumber(f.properties),0.5),
+                pickable: true
+              })
               ],
               getTooltip
           });
