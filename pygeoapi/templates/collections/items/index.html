@@ -482,7 +482,7 @@
       function createSVGIcon(n) {
         const label = n < 10 ? n.toString() : '10+';
         return `\
-        <svg width="80" height="80" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg width="100" height="100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" fill="rgb(10,132,255)" stroke="rgb(200,200,200)" stroke-width="2"/>
           <text x="12" y="12" fill="#fff" text-anchor="middle" alignment-baseline="middle" font-family="verdana" font-size="8">${label}</text>
         </svg>`;
@@ -572,9 +572,11 @@
                       "geometry": {"type": speckle_data.features[i].geometry.type, "coordinates":speckle_data.features[i].geometry.coordinates}, 
                       "properties": speckle_data.features[i].properties,
                       "displayProperties": 
-                        {"color": 'rgba(10,132,255,255)',
+                        {
+                          "color": 'rgba(10,132,255,255)',
                           "lineWidth": 2,
-                          "radius": 10
+                          "radius": 10,
+                          "object_type": "comments",
                         } 
                       });
               }
@@ -588,12 +590,19 @@
           }
           
           var extent = speckle_data["extent"];
-          speckle_data.features = speckle_features;          
-          speckle_geometries = [];
+
+          speckle_data.features = [];
           speckle_features.forEach((element, index, array) => {
-            new_geometry = element;
-            new_geometry.coordinates = element.geometry.coordinates;
-            speckle_geometries.push(new_geometry);
+            if (element.displayProperties.object_type != "comments"){
+              speckle_data.features.push(element);
+            }
+          });  
+
+          speckle_comments = [];
+          speckle_features.forEach((element, index, array) => {
+            if (element.displayProperties.object_type == "comments"){
+              speckle_comments.push(element);
+            }
           });
 
           // Create deck.gl map
@@ -620,7 +629,7 @@
                   getFillColor: f => rgbaToArgbList(f.displayProperties.color),
                   getLineWidth: f => f.displayProperties.lineWidth,
                   getLineColor: f => rgbaToArgbListDarker(f.displayProperties.color),
-                  getPointRadius: 0, //f => f.displayProperties.radius * getMessagesNumber(f.properties),
+                  getPointRadius: f => f.displayProperties.radius / 2,
 
                   // Interactive props
                   pickable: true,
@@ -629,7 +638,7 @@
               
               new deck.IconLayer({
                 id: 'IconLayer',
-                data: speckle_geometries,
+                data: speckle_comments,
                 // getColor: d => [Math.sqrt(getMessagesNumber(d.properties)), 140, 0],
                 
                 getIcon: d => ({
@@ -637,8 +646,8 @@
                   width: 128,
                   height: 128
                 }),
-                getPosition: d => d.coordinates[0],
-                getSize: f => 40 * Math.pow(getMessagesNumber(f.properties),0.5),
+                getPosition: d => d.geometry.coordinates[0],
+                getSize: f => 50 * Math.pow(getMessagesNumber(f.properties),0.3),
                 pickable: true
               })
               ],
