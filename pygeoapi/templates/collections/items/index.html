@@ -342,7 +342,9 @@
 
 {% block extrafoot %}
 
-    <script>      
+    <script>
+      document.getElementById("loading_screen").style.height = '0px';
+
       // attach even to modeSwitch btn
       document.getElementById("modeSwitch").onclick = switchMode;
       var el = document.getElementById("modeSwitch");
@@ -462,7 +464,7 @@
           return properties.text_html
         }
         else if (properties != null && properties.speckle_type != null && properties.id != null){
-          return `${properties.speckle_type}: ${properties.id}`
+          return `${properties.speckle_type}: ${properties.id.split("_")[0]}`
         }
         else{
           return ``
@@ -510,6 +512,7 @@
               coords = feature.geometry.coordinates;
 
               if (feature.geometry.type.includes("Polygon")) {
+                  polygons = []
 
                   // check orientation of each PolygonPart, if vertical - shift points slightly
                   for (let p = 0; p < coords.length; p++) {
@@ -535,7 +538,7 @@
                                 createdPolygon = true;
 
                                 multipolygon_coords = [coords[p][c]];
-                                speckle_features.push({"id": speckle_features.length, "type":"Feature", 
+                                polygons.push({"id": speckle_features.length, "type":"Feature", 
                                     "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
                                     "properties": speckle_data.features[i].properties,
                                     "displayProperties": speckle_data.features[i].displayProperties });
@@ -545,18 +548,21 @@
                                   createdPolygon = true;
 
                                   multipolygon_coords = [coords[p][c].slice(0,3)];
-                                  speckle_features.push({"id": speckle_features.length, "type":"Feature", 
+                                  polygons.push({"id": speckle_features.length, "type":"Feature", 
                                       "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
                                       "properties": speckle_data.features[i].properties,
                                       "displayProperties": speckle_data.features[i].displayProperties });
 
                                   multipolygon_coords = [[coords[p][c][2], coords[p][c][3], coords[p][c][0]]];
-                                  speckle_features.push({"id": speckle_features.length, "type":"Feature", "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, "properties": speckle_data.features[i].properties });
+                                  polygons.push({"id": speckle_features.length, "type":"Feature", 
+                                      "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
+                                      "properties": speckle_data.features[i].properties ,
+                                      "displayProperties": speckle_data.features[i].displayProperties });
                               };
                           };
                           if (createdPolygon == false){
                               multipolygon_coords = [coords[p][c]];
-                              speckle_features.push({"id": speckle_features.length, "type":"Feature", 
+                              polygons.push({"id": speckle_features.length, "type":"Feature", 
                                   "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
                                   "properties": speckle_data.features[i].properties,
                                   "displayProperties": speckle_data.features[i].displayProperties });
@@ -564,6 +570,10 @@
                           
                       };
                   };
+                  polygons.forEach((element, index, array) => {
+                    element.displayProperties.lineWidth = 0.05
+                    speckle_features.push(element);
+                  });
 
               } 
               else if (speckle_data.features[i].displayProperties.object_type == "comment")
