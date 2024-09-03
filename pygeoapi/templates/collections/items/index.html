@@ -340,7 +340,7 @@
 
 {% block extrafoot %}
 
-    <script>
+    <script>      
       // attach even to modeSwitch btn
       document.getElementById("modeSwitch").onclick = switchMode;
       var el = document.getElementById("modeSwitch");
@@ -431,15 +431,38 @@
           return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16), parseInt(result[0], 16)] : null;
           };
       function  rgbaToArgbList(color) {
+          if (color == null){
+            return [10,132,255,255];
+          }
           col = color.replace('rgba(','').replace(')','').split(',',4);
           value = [ parseInt(col[0]), parseInt(col[1]), parseInt(col[2]), parseInt(col[3]) ];
           return value;
           }
       function  rgbaToArgbListDarker(color) {
+          if (color == null){
+            return [7,120,235,255];
+          }
           col = color.replace('rgba(','').replace(')','').split(',',4);
           value = [ parseInt(col[0])*0.95, parseInt(col[1])*0.95, parseInt(col[2])*0.95, parseInt(col[3]) ];
           return value;
           }
+      function getMessagesNumber(messages)
+        { 
+          if (messages == null) {return 1}
+          else 
+          {
+            return messages.length
+          }
+        }
+      function getDisplayText(properties)
+      {
+        if (properties.text_html != null){
+          return properties.text_html
+        }
+        else{
+          return `${properties.speckle_type}: ${properties.id}`
+        }
+      }
 
       function initialize3d() {
           maptilersdk.config.apiKey = '{{ config["server"]["map"]["key"] }}'; 
@@ -478,7 +501,8 @@
                                 multipolygon_coords = [coords[p][c]];
                                 speckle_features.push({"id": speckle_features.length, "type":"Feature", 
                                     "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
-                                    "properties": speckle_data.features[i].properties });
+                                    "properties": speckle_data.features[i].properties,
+                                    "displayProperties": speckle_data.features[i].displayProperties });
                                           
                               }
                               else if (polygon_pts.length==4) {
@@ -487,7 +511,8 @@
                                   multipolygon_coords = [coords[p][c].slice(0,3)];
                                   speckle_features.push({"id": speckle_features.length, "type":"Feature", 
                                       "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
-                                      "properties": speckle_data.features[i].properties });
+                                      "properties": speckle_data.features[i].properties,
+                                      "displayProperties": speckle_data.features[i].displayProperties });
 
                                   multipolygon_coords = [[coords[p][c][2], coords[p][c][3], coords[p][c][0]]];
                                   speckle_features.push({"id": speckle_features.length, "type":"Feature", "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, "properties": speckle_data.features[i].properties });
@@ -497,13 +522,33 @@
                               multipolygon_coords = [coords[p][c]];
                               speckle_features.push({"id": speckle_features.length, "type":"Feature", 
                                   "geometry": {"type": "MultiPolygon", "coordinates":[multipolygon_coords]}, 
-                                  "properties": speckle_data.features[i].properties });
+                                  "properties": speckle_data.features[i].properties,
+                                  "displayProperties": speckle_data.features[i].displayProperties });
                           }
                           
                       };
                   };
 
               } 
+              else if (speckle_data.features[i].displayProperties.object_type == "comment")
+              {   
+                  speckle_features.push({"id": speckle_features.length, "type":"Feature", 
+                      "geometry": {"type": speckle_data.features[i].geometry.type, "coordinates":speckle_data.features[i].geometry.coordinates}, 
+                      "properties": speckle_data.features[i].properties,
+                      "displayProperties": 
+                        {"color": 'rgba(10,132,255,255)',
+                          "lineWidth": 2,
+                          "radius": 10
+                        } 
+                      });
+              }
+              else
+              {   
+                  speckle_features.push({"id": speckle_features.length, "type":"Feature", 
+                      "geometry": {"type": speckle_data.features[i].geometry.type, "coordinates":speckle_data.features[i].geometry.coordinates}, 
+                      "properties": speckle_data.features[i].properties,
+                      "displayProperties": speckle_data.features[i].displayProperties });
+              }
           }
           
           var extent = speckle_data["extent"];
@@ -524,15 +569,36 @@
               controller: true,
 
               layers: [
+              
               new deck.GeoJsonLayer({
                   id: 'speckle_data',
                   data: speckle_data,
                   // Styles
                   filled: true,
-                  getFillColor: f => rgbaToArgbList(f.properties.color),
-                  getLineWidth: 0.05,
-                  getLineColor: f => rgbaToArgbListDarker(f.properties.color),
-              })
+                  getFillColor: f => rgbaToArgbList(f.displayProperties.color),
+                  getLineWidth: f => f.displayProperties.lineWidth,
+                  getLineColor: f => rgbaToArgbListDarker(f.displayProperties.color),
+                  getPointRadius:  f => f.displayProperties.radius * getMessagesNumber(f.properties.messages),
+
+                  // Interactive props
+                  pickable: true,
+                  autoHighlight: true,
+                  onClick: info =>
+                    info.object && alert(`${getDisplayText(info.object.properties)}`)
+              }),
+              
+              new deck.IconLayer({
+                  id: 'IconLayer',
+                  data: speckle_data,
+                  getIcon: d => ({
+                    url: 'https://w7.pngwing.com/pngs/976/237/png-transparent-blue-location-pin-icon-thumbnail.png',
+                    width: 128,
+                    height: 128
+                  }),
+                  getPosition: f => f.coordinates,
+                  getSize: 40,
+                  pickable: true
+                })
               ]
           });
     }
