@@ -17,4 +17,4 @@ shapely
 SQLAlchemy<2.0.0
 tinydb
 unicodecsv
-specklepy
+specklepy==2.19.6
