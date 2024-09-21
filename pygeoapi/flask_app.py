@@ -168,6 +168,21 @@ def execute_from_flask(api_function, request: Request, *args,
     return get_response((headers, status, content))
 
 
+def generate():
+    collection_id = "speckle"
+
+    yield loading_screen().data
+    
+    try:
+        browser_response = execute_from_flask(itemtypes_api.get_collection_items,
+                            request, collection_id,
+                            skip_valid_check=True)
+        yield browser_response.data
+
+    except Exception as ex:
+        yield error_screen(ex).data
+
+
 @BLUEPRINT.route('/')
 def landing_page():
     """
@@ -176,8 +191,6 @@ def landing_page():
     :returns: HTTP response
     """
     
-    collection_id = "speckle"
-
     agent = request.headers.get('User-Agent')
     # Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
     # Mozilla/5.0 QGIS/32815/Windows 10 Version 2009
@@ -196,18 +209,6 @@ def landing_page():
     
     # if requested from the browser, return this, otherwise ignore IF statement
     if request.method == 'GET' and browser_agent:  # list items
-        
-        def generate():
-            yield loading_screen().data
-            try:
-                browser_response = execute_from_flask(itemtypes_api.get_collection_items,
-                                    request, collection_id,
-                                    skip_valid_check=True)
-                yield browser_response.data
-
-            except Exception as ex:
-                yield error_screen(ex).data
-
         return Response(stream_with_context(generate()))
     
     return get_response(api_.landing_page(request))
@@ -294,8 +295,15 @@ def collections(collection_id=None):
     :returns: HTTP response
     """
     
-    # raise NotImplementedError()
     return get_response(api_.describe_collections(request, collection_id))
+
+
+@BLUEPRINT.route('/speckle')
+def speckle_collection():
+    
+    collection_id="speckle"
+
+    return collection_items(collection_id=collection_id)
 
 
 @BLUEPRINT.route('/collections/<path:collection_id>/schema')

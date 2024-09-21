@@ -30,12 +30,12 @@
       });
       
       (async () => {
-                //const speckle_data = await fetch('https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments', {
-                //var speckle_url = 'http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c&limit=1000000&datatype=polygons&preserveattributes=false';
+                //const speckle_data = await fetch('https://geo.speckle.systems/speckle/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=projectcomments', {
+                //var speckle_url = 'http://localhost:5000/speckle/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c&limit=1000000&datatype=polygons&preserveattributes=false';
                 // https://app.speckle.systems/projects/5feae56049/models/01c4183677
-                var speckle_url = 'http://localhost:5000/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/01c4183677&limit=1000000&datatype=polygons&preserveattributes=true';
+                var speckle_url = 'https://geo.speckle.systems/speckle/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/01c4183677&limit=1000000&datatype=polygons&preserveattributes=true';
                 
-                //var speckle_url = 'https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c&northDegrees=-30&preserveAttributes=true';
+                //var speckle_url = 'https://geo.speckle.systems/speckle/?speckleUrl=https://app.speckle.systems/projects/5feae56049/models/9c43d7569c&northDegrees=-30&preserveAttributes=true';
                 const speckle_data = await fetch(speckle_url, {
                    headers: {
                      'Accept': 'application/geo+json'
