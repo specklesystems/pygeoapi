@@ -172,7 +172,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
         raise ValueError("No supported features found")
     
     time2 = datetime.now()
-    print(f"UTC time: {time2.astimezone(timezone.utc)}")
+    print(f"_____UTC time: {time2.astimezone(timezone.utc)}")
     print(f"Creating features time: {(time2-time1).total_seconds()}")
 
 def get_feature_bbox(coords) -> List[float]:
