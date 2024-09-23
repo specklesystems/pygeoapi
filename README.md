@@ -81,7 +81,7 @@ Then you can add it to the base map (e.g. using Leaflet and OpenStreetMap basema
         loadSpeckleData();
 
         async function loadSpeckleData() => {
-            var speckle_model_url = 'https://geo.speckle.systems/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons';
+            var speckle_model_url = 'https://geo.speckle.systems/speckle/?speckleUrl=https://app.speckle.systems/projects/344f803f81/models/5582ab673e&datatype=polygons';
             const speckle_data = await fetch(speckle_model_url, {
                 headers: {'Accept': 'application/geo+json'}
             }).then(response => response.json());
