@@ -1,5 +1,5 @@
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List
 
 
@@ -13,7 +13,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
     from specklepy.objects.graph_traversal.traversal import TraversalContext
     from specklepy.objects.other import Collection
 
-    print(f"Creating features..")
+    # print(f"Creating features..")
     time1 = datetime.now()
     
     all_props = []
@@ -172,11 +172,10 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
         raise ValueError("No supported features found")
     
     time2 = datetime.now()
-    print(f"_____UTC time: {time2.astimezone(timezone.utc)}")
-    
+
     time_operation = (time2-time1).total_seconds()
     self.times["time_creating_features"] = time_operation
-    print(f"Creating features time: {time_operation}")
+    # print(f"Creating features time: {time_operation}")
 
 def get_feature_bbox(coords) -> List[float]:
     """Get min max coordinates of the feature."""

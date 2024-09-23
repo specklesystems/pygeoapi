@@ -343,6 +343,7 @@ class SpeckleProvider(BaseProvider):
     def load_speckle_data(self: str) -> Dict:
         """Receive and process Speckle data, return geojson."""
 
+        from datetime import datetime, timezone
         from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client, get_comments, set_actions
 
         from specklepy.objects.base import Base
@@ -397,7 +398,7 @@ class SpeckleProvider(BaseProvider):
             message="Received commit in pygeoapi",
         )
 
-        print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
+        print(f"____{datetime.now().astimezone(timezone.utc)} _Rendering model '{branch['name']}' of the project '{stream['name']}'")
         speckle_data = self.traverse_data(commit_obj, comments)
 
         set_actions(self, client)
@@ -483,7 +484,7 @@ class SpeckleProvider(BaseProvider):
         
         time_operation = (time2-time1).total_seconds()
         self.times["time_sort"] = time_operation
-        print(f"Sorting time: {time_operation}")
+        # print(f"Sorting time: {time_operation}")
 
         return data
     
