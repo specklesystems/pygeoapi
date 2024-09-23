@@ -216,4 +216,14 @@ def get_attachment(project_id: str, attachment_id: str, attachment_name: str) ->
         raise Exception(
             f"Request not successful: Response code {r.status_code}"
         )
-    
+
+def set_actions(self: "SpeckleProvider", client: "SpeckleClient"):
+    from specklepy.logging.metrics import track
+    try:
+        full_dict = {**self.url_params, **self.times}
+        full_dict["GIS commit"] = self.commit_gis
+        full_dict["model"] = f"{self.project_name}, {self.model_name}"
+        full_dict["time_TOTAL"] = sum([x[1] for x in self.times.items()])
+        track("GEO receive", client.account, full_dict)
+    except:
+        pass

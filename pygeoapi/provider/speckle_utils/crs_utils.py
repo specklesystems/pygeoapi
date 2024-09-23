@@ -73,6 +73,7 @@ def get_set_crs_settings(self: "SpeckleProvider", commit_obj: "Base", context_li
             offset_y = crs["offset_y"]
             self.north_degrees = crs["rotation"]
             create_crs_from_wkt(self, crs["wkt"])
+            self.commit_gis = True
 
             if self.crs.to_authority() is not None:
                 data["model_crs"] = f"{self.crs.to_authority()}, {self.crs.name} "

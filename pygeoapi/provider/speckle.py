@@ -119,10 +119,15 @@ class SpeckleProvider(BaseProvider):
         self.speckle_url = self.url.lower().split("speckleurl=")[-1].split("&")[0].split("@")[0].split("?")[0]
 
         self.speckle_data = None
+        self.project_name = ""
         self.model_name = ""
 
         self.crs = None
         self.crs_dict = None
+
+        self.commit_gis = False
+        self.url_params = {"url_data_type":"", "url_preserve_attributes":"", "url_crs_authid":"", "url_lat":"","url_lon":"","url_north_degrees":"","url_limit":""}
+        self.times = {}
 
         self.requested_data_type: str = "polygons (default)" # points, lines, polygons, projectcomments
         self.preserve_attributes: str = "true (default)"
@@ -338,7 +343,7 @@ class SpeckleProvider(BaseProvider):
     def load_speckle_data(self: str) -> Dict:
         """Receive and process Speckle data, return geojson."""
 
-        from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client, get_comments
+        from pygeoapi.provider.speckle_utils.server_utils import get_stream_branch, get_client, get_comments, set_actions
 
         from specklepy.objects.base import Base
         from specklepy.logging.exceptions import SpeckleException
@@ -368,6 +373,7 @@ class SpeckleProvider(BaseProvider):
             comments = {}
 
         # set the Model name
+        self.project_name = stream['name']
         self.model_name = branch['name']
 
         commit = branch["commits"]["items"][0]
@@ -394,6 +400,7 @@ class SpeckleProvider(BaseProvider):
         print(f"Rendering model '{branch['name']}' of the project '{stream['name']}'")
         speckle_data = self.traverse_data(commit_obj, comments)
 
+        set_actions(self, client)
 
         speckle_data["features"].extend(speckle_data["comments"])
         speckle_data["comments"] = []
@@ -473,7 +480,10 @@ class SpeckleProvider(BaseProvider):
             sorted_list[i]["properties"]["FID"] = i+1 
         data['features'] = sorted_list
         time2 = datetime.now()
-        print(f"Sorting time: {(time2-time1).total_seconds()}")
+        
+        time_operation = (time2-time1).total_seconds()
+        self.times["time_sort"] = time_operation
+        print(f"Sorting time: {time_operation}")
 
         return data
     

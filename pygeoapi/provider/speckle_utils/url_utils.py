@@ -31,6 +31,7 @@ def get_set_url_parameters(self: "SpeckleProvider"):
                     requested_data_type = item.split("datatype=")[1]
                     if requested_data_type in ["points", "lines", "polygons", "projectcomments"]:
                         self.requested_data_type = requested_data_type
+                        self.url_params["url_data_type"] = requested_data_type
                 except:
                     raise ValueError(f"Provide valid dataType parameter (points/lines/polygons/projectcomments): {item}")     
             
@@ -39,6 +40,7 @@ def get_set_url_parameters(self: "SpeckleProvider"):
                     preserve_attributes = item.split("preserveattributes=")[1]
                     if preserve_attributes in ["true", "false"]:
                         self.preserve_attributes = preserve_attributes
+                        self.url_params["url_preserve_attributes"] = preserve_attributes
                 except:
                     ValueError(f"Provide valid preserverAttributes parameter (true/false): {item}")
 
@@ -47,23 +49,27 @@ def get_set_url_parameters(self: "SpeckleProvider"):
                 if isinstance(crs_authid, str) and len(crs_authid)>3:
                     crsauthid = True
                     self.crs_authid = crs_authid
+                    self.url_params["url_crs_authid"] = crs_authid
 
             elif "lat=" in item:
                 try:
                     lat = float(item.split("lat=")[1])
                     self.lat = lat
+                    self.url_params["url_lat"] = lat
                 except:
                     raise ValueError(f"Invalid Lat input, must be numeric: {item}")
             elif "lon=" in item:
                 try:
                     lon = float(item.split("lon=")[1])
                     self.lon = lon
+                    self.url_params["url_lon"] = lon
                 except:
                     raise ValueError(f"Invalid Lon input, must be numeric: {item}")
             elif "northdegrees=" in item:
                 try:
                     north_degrees = float(item.split("northdegrees=")[1])
                     self.north_degrees = north_degrees
+                    self.url_params["url_north_degrees"] = north_degrees
                 except:
                     raise ValueError(f"Invalid northDegrees input, must be numeric: {item}")    
             elif "limit=" in item:
@@ -71,6 +77,7 @@ def get_set_url_parameters(self: "SpeckleProvider"):
                     limit = int(item.split("limit=")[1])
                     if limit>0: 
                         self.limit = limit
+                        self.url_params["url_limit"] = limit
                 except:
                     ValueError(f"Invalid limit input, must be a positive integer: {item}")
                 

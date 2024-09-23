@@ -13,7 +13,10 @@ def reproject_bulk(self, all_coords: List[List[List[float]]], all_coord_counts: 
     time1 = datetime.now()
     flat_coords = reproject_2d_coords_list(self, all_coords)
     time2 = datetime.now()
-    print(f"Reproject time: {(time2-time1).total_seconds()}")
+
+    time_operation = (time2-time1).total_seconds()
+    self.times["time_reproject"] = time_operation
+    print(f"Reproject time: {time_operation}")
 
     # define type of features
     feat_coord_group_is_multi = [True if None in x else False for x in all_coord_counts]
@@ -61,7 +64,10 @@ def reproject_bulk(self, all_coords: List[List[List[float]]], all_coord_counts: 
             geometry["coordinates"].extend(polygon_parts)
     
     time3 = datetime.now()
-    print(f"Construct back geometry time: {(time3-time2).total_seconds()}")
+    
+    time_operation = (time3-time2).total_seconds()
+    self.times["time_reconstruct_geometry"] = time_operation
+    print(f"Construct back geometry time: {time_operation}")
 
 def reproject_2d_coords_list(self, coords_in: List[List[float]]) -> List[List[float]]:
     """Return coordinates in a CRS of SpeckleProvider."""
