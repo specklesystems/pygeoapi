@@ -75,7 +75,7 @@ LOGGER = logging.getLogger(__name__)
 #: Return headers for requests (e.g:X-Powered-By)
 HEADERS = {
     'Content-Type': 'application/json',
-    'X-Powered-By': f'pygeoapi {__version__}'
+    # 'X-Powered-By': f'pygeoapi {__version__}'
 }
 
 CHARSET = ['utf-8']

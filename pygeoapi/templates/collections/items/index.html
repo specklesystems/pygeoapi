@@ -335,7 +335,10 @@
 {% block extrafoot %}
 
     <script>
-      document.getElementById("loading_screen").remove();
+      try {
+        document.getElementById("loading_screen").remove();
+      }
+      catch(err) {}
 
       // attach even to modeSwitch btn
       document.getElementById("modeSwitch").onclick = switchMode;

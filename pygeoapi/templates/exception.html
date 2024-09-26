@@ -6,6 +6,9 @@
       <p>{{ data['description'] }}</p>
     </section>
     <script>
-      document.getElementById("loading_screen").remove();
+      try {
+        document.getElementById("loading_screen").remove();
+      }
+      catch(err) {}
     </script>
 {% endblock %}

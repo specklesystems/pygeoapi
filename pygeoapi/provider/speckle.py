@@ -111,7 +111,7 @@ class SpeckleProvider(BaseProvider):
                 print(completed_process.stderr)
                 raise Exception(m)
 
-            patch_specklepy()
+        patch_specklepy()
 
         
         # assign global values
@@ -399,9 +399,8 @@ class SpeckleProvider(BaseProvider):
         )
 
         print(f"____{datetime.now().astimezone(timezone.utc)} _Rendering model '{branch['name']}' of the project '{stream['name']}'")
-        speckle_data = self.traverse_data(commit_obj, comments)
-
         set_actions(self, client)
+        speckle_data = self.traverse_data(commit_obj, comments)
 
         speckle_data["features"].extend(speckle_data["comments"])
         speckle_data["comments"] = []

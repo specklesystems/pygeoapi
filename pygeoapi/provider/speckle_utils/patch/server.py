@@ -168,8 +168,23 @@ class ServerTransport(AbstractTransport):
         # iter through returned objects saving them as we go
         target_transport.begin_write()
         all_lines = [line for _,line in enumerate(lines)]
+
+        # fix wrongly split lines 
         for i, line in enumerate(all_lines):
-            if line:
+            if line and i!= 0 and (len(line)<=10 or'"id": "' not in line[:10]):
+                # find the last line with ID
+                matching_index = -1
+                for k, id_line in enumerate(all_lines):
+                    if k<i and '"id": "' in id_line:
+                        matching_index = k
+                    if k==i:
+                        break
+                if matching_index != -1:
+                    all_lines[matching_index] += "},{" + line
+                    all_lines[i] = ""
+
+        for i, line in enumerate(all_lines):
+            if line and len(line)>10 and '"id": "' in line[:10]:
                 hash = line.split('"id": "')[1].split('"')[0]
                 obj = "{" + line + "}"
                 if i==0:
