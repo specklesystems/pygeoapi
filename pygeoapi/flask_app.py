@@ -200,9 +200,11 @@ def landing_page():
     browser_list = ["Chrome", "Safari", "Firefox", "Edg/", "Trident/"]
     print(agent)
     
-    if agent is None:
-        return error_screen("User-Agent not specified")
-    elif "YaBrowser/" in agent or "yandex" in agent.lower():
+    request.url += f"&userAgent={agent}"
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+    
+    if agent is not None and ("YaBrowser/" in agent or "yandex" in agent.lower()):
         raise ValueError("Your browser is not supported.")
     for br in browser_list:
         if br in agent:
