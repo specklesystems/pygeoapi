@@ -80,6 +80,14 @@ def get_set_url_parameters(self: "SpeckleProvider"):
                         self.url_params["url_limit"] = limit
                 except:
                     ValueError(f"Invalid limit input, must be a positive integer: {item}")
+                 
+            elif "useragent=" in item:
+                try:
+                    agent = item.split("useragent=")[1]
+                    self.user_agent = agent
+                    self.url_params["user_agent"] = agent
+                except:
+                    ValueError(f"Invalid limit input, must be a positive integer: {item}")
                 
 
         if self.speckle_url == "-":

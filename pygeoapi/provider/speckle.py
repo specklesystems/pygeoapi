@@ -136,6 +136,7 @@ class SpeckleProvider(BaseProvider):
         self.north_degrees: float = 0
         self.crs_authid = ""
         self.limit = 10000
+        self.user_agent = ""
 
         self.missing_url = ""
         self.limit_message = ""
@@ -385,6 +386,7 @@ class SpeckleProvider(BaseProvider):
             raise SpeckleException("Transport not found")
 
         # receive commit
+        set_actions(self, client)
         try:
             commit_obj = operations.receive(objId, transport, None)
         except Exception as ex:
@@ -399,7 +401,6 @@ class SpeckleProvider(BaseProvider):
         )
 
         print(f"____{datetime.now().astimezone(timezone.utc)} _Rendering model '{branch['name']}' of the project '{stream['name']}'")
-        set_actions(self, client)
         speckle_data = self.traverse_data(commit_obj, comments)
 
         speckle_data["features"].extend(speckle_data["comments"])

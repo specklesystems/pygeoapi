@@ -224,6 +224,7 @@ def set_actions(self: "SpeckleProvider", client: "SpeckleClient"):
         full_dict["GIS commit"] = self.commit_gis
         full_dict["model"] = f"{self.project_name}, {self.model_name}"
         full_dict["time_TOTAL"] = sum([x[1] for x in self.times.items()])
+        full_dict["model_url"] = self.speckle_url
         track("GEO receive", client.account, full_dict)
     except:
         pass
