@@ -209,7 +209,7 @@ def landing_page():
     if agent is not None and ("YaBrowser/" in agent or "yandex" in agent.lower()):
         raise ValueError("Your browser is not supported.")
     for br in browser_list:
-        if br in agent:
+        if agent is not None and br in agent:
             browser_agent = True
             break
     
