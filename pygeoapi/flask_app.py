@@ -34,6 +34,7 @@ import os
 from typing import Union
 
 import click
+from datetime import datetime, timezone
 from flask import (Flask, Blueprint, make_response, request,
                    send_from_directory, Response, Request, stream_with_context)
 from http import HTTPStatus
@@ -192,13 +193,14 @@ def landing_page():
     """
     
     agent = request.headers.get('User-Agent')
+    print(f"____{datetime.now().astimezone(timezone.utc)} _Agent /: {agent}")
+    print(request.url)
     # Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
     # Mozilla/5.0 QGIS/32815/Windows 10 Version 2009
     # ArcGIS Pro 3.3.0 (00000000000) - ArcGISPro
 
     browser_agent = False
     browser_list = ["Chrome", "Safari", "Firefox", "Edg/", "Trident/"]
-    print(agent)
     
     request.url += f"&userAgent={agent}"
     CONFIG = get_config(request=request)
@@ -305,6 +307,10 @@ def collections(collection_id=None):
 @BLUEPRINT.route('/speckle')
 def speckle_collection():
     
+    agent = request.headers.get('User-Agent')
+    print(f"____{datetime.now().astimezone(timezone.utc)} _Agent /speckle: {agent}")
+    print(request.url)
+
     collection_id="speckle"
 
     return collection_items(collection_id=collection_id)
