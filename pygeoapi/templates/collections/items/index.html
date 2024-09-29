@@ -395,12 +395,13 @@
           L.control.zoom({
               position: 'topright'
           }).addTo(map);
-          map.addLayer(new L.TileLayer(
+          var tileLayer = new L.TileLayer(
               '{{ config['server']['map']['url'] }}', {
                   maxZoom: 22,
+                  minZoom: 12,
                   attribution: '{{ config['server']['map']['attribution'] | safe }}  &copy; Data: <a href="https://speckle.systems/">Speckle Systems</a>'
               }
-          ));
+          );
 
           geojson_data = split_polygons(geojson_data_original);
 
@@ -443,13 +444,32 @@
                   layer.bindPopup(html);
               }
           }); //.addTo(map);
+          
+          
+          var group = L.featureGroup([items, comments]);
+          // load proper basemap for Speckle models; but only zoomed-out one for empty data
+          try
+          {
+            bounds = group.getBounds();
+            map.fitBounds(bounds);
 
-          var group = L.featureGroup([items, comments])
-          .addTo(map);
+            tileLayer.addTo(map);
+            group.addTo(map);
+          }
+          catch (err){
+            tileLayer = new L.TileLayer(
+              '{{ config['server']['map']['url'] }}', {
+                  maxZoom: 2,
+                  minZoom: 2,
+                  attribution: '{{ config['server']['map']['attribution'] | safe }}  &copy; Data: <a href="https://speckle.systems/">Speckle Systems</a>'
+              }
+            );
+            tileLayer.addTo(map);
+          }
+
+          
 
           //map.addLayer(lines);
-
-          map.fitBounds(group.getBounds());
           // map.setZoom(19); // in order for the tiles to load
       };
 
@@ -678,6 +698,7 @@
                 longitude: extent[0] + (extent[2]-extent[0])/2,
                 latitude: extent[1] + (extent[3]-extent[1])/2,
                 zoom: 22,
+                minZoom: 12,
                 pitch: 60,
                 bearing: 1.469387755102039
               },
