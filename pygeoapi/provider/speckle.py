@@ -455,8 +455,8 @@ class SpeckleProvider(BaseProvider):
             lambda x: [
                 item
                 for item in x.get_member_names()
-                if isinstance(getattr(x, item, None), list)
-                and (x.speckle_type.split(":")[-1] not in supported_types or isinstance(x, VectorLayer))
+                if (x.speckle_type.split(":")[-1] not in supported_types or isinstance(x, VectorLayer))
+                and (isinstance(getattr(x, item, None), list) or (item.startswith("@") and x.speckle_type == "Base") )
             ],
         )
         context_list = [x for x in GraphTraversal([rule]).traverse(commit_obj)]
