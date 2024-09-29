@@ -31,6 +31,7 @@
 """Flask module providing the route paths to the api"""
 
 import os
+import socket
 from typing import Union
 
 import click
@@ -193,8 +194,11 @@ def landing_page():
     """
     
     agent = request.headers.get('User-Agent')
-    print(f"____{datetime.now().astimezone(timezone.utc)} _Agent /: {agent}")
-    print(request.url)
+    ip_address = socket.gethostbyname(socket.gethostname())
+    print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
+    print(f"_Agent /: {agent}")
+    print(f"_IP Address: {ip_address}")
+    print(f"_Request URL: {request.url}")
     # Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
     # Mozilla/5.0 QGIS/32815/Windows 10 Version 2009
     # ArcGIS Pro 3.3.0 (00000000000) - ArcGISPro
@@ -308,8 +312,11 @@ def collections(collection_id=None):
 def speckle_collection():
     
     agent = request.headers.get('User-Agent')
-    print(f"____{datetime.now().astimezone(timezone.utc)} _Agent /speckle: {agent}")
-    print(request.url)
+    ip_address = socket.gethostbyname(socket.gethostname())
+    print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
+    print(f"_Agent /speckle: {agent}")
+    print(f"_IP Address: {ip_address}")
+    print(f"_Request URL: {request.url}")
 
     collection_id="speckle"
 

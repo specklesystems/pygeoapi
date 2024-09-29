@@ -367,6 +367,10 @@ class SpeckleProvider(BaseProvider):
         # get stream and branch data
         client = get_client(wrapper, url_proj)
         stream, branch = get_stream_branch(self, client, wrapper)
+        if stream is None:
+            raise ValueError(f"Project from URL '{url_proj}' not found")
+        if branch is None:
+            raise ValueError(f"Model '{wrapper.model_id}' of the project '{stream['name']}' not found")
 
         if self.requested_data_type == "projectcomments":
             comments = get_comments(client, wrapper.stream_id, wrapper.model_id)
@@ -400,8 +404,10 @@ class SpeckleProvider(BaseProvider):
             message="Received commit in pygeoapi",
         )
 
-        print(f"____{datetime.now().astimezone(timezone.utc)} _Rendering model '{branch['name']}' of the project '{stream['name']}'")
+        print(f"_{datetime.now().astimezone(timezone.utc)} _Rendering model '{branch['name']}' of the project '{stream['name']}'")
         speckle_data = self.traverse_data(commit_obj, comments)
+        
+        set_actions(self, client, "GEO post-receive")
 
         speckle_data["features"].extend(speckle_data["comments"])
         speckle_data["comments"] = []

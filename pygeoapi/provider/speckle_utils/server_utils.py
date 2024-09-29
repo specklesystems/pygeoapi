@@ -217,7 +217,7 @@ def get_attachment(project_id: str, attachment_id: str, attachment_name: str) ->
             f"Request not successful: Response code {r.status_code}"
         )
 
-def set_actions(self: "SpeckleProvider", client: "SpeckleClient"):
+def set_actions(self: "SpeckleProvider", client: "SpeckleClient", action: str = "GEO receive"):
     from specklepy.logging.metrics import track
     try:
         full_dict = {**self.url_params, **self.times}
@@ -225,6 +225,7 @@ def set_actions(self: "SpeckleProvider", client: "SpeckleClient"):
         full_dict["model"] = f"{self.project_name}, {self.model_name}"
         full_dict["time_TOTAL"] = sum([x[1] for x in self.times.items()])
         full_dict["model_url"] = self.speckle_url
-        track("GEO receive", client.account, full_dict)
-    except:
+        track(action, client.account, full_dict)
+    except Exception as ex:
+        print(f"_Cannot set action '{action}': {ex}")
         pass
