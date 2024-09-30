@@ -31,7 +31,6 @@
 """Flask module providing the route paths to the api"""
 
 import os
-import socket
 from typing import Union
 
 import click
@@ -194,7 +193,10 @@ def landing_page():
     """
     
     agent = request.headers.get('User-Agent')
-    ip_address = socket.gethostbyname(socket.gethostname())
+    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+        ip_address = request.environ['REMOTE_ADDR']
+    else:
+        ip_address = request.environ['HTTP_X_FORWARDED_FOR']
     print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
     print(f"_Agent /: {agent}")
     print(f"_IP Address: {ip_address}")
@@ -311,8 +313,11 @@ def collections(collection_id=None):
 @BLUEPRINT.route('/speckle')
 def speckle_collection():
     
-    agent = request.headers.get('User-Agent')
-    ip_address = socket.gethostbyname(socket.gethostname())
+    agent = request.headers.get('User-Agent')    
+    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+        ip_address = request.environ['REMOTE_ADDR']
+    else:
+        ip_address = request.environ['HTTP_X_FORWARDED_FOR']
     print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
     print(f"_Agent /speckle: {agent}")
     print(f"_IP Address: {ip_address}")
