@@ -404,6 +404,7 @@
           );
 
           geojson_data = split_polygons(geojson_data_original);
+          project_url = data['speckle_url'].split("/models")[0]
 
           var items = new L.GeoJSON(geojson_data, {
               filter: (feature) => {
@@ -413,7 +414,7 @@
                   return new L.circleMarker(latlng)            
               },
               onEachFeature: function (feature, layer) {
-                  var url = '{{ data['speckle_project_url'] }}/models/' + feature.id.split("_")[0]
+                  var url = project_url + '/models/' + feature.id.split("_")[0]
                   var html = '<span><td><p>' + feature['properties']['speckle_type'] + '</p></td><a href="' + url + '" target="_blank">' + feature['properties']['id'].split("_")[0] + '</a></span>';
                   layer.bindPopup(html);
 
@@ -439,7 +440,7 @@
                   return new L.marker(latlng)            
               },
               onEachFeature: function (feature, layer) {
-                  var url = '{{ data['speckle_project_url'] }}/models/' + feature.properties.resource_id + '#threadId=' + feature.id; 
+                  var url = project_url + '/models/' + feature.properties.resource_id + '#threadId=' + feature.id; 
                   var html = '<span><td><a href="' + url + '" target="_blank">Go to thread</a></td> <td><p>' + feature['properties']['text_html'] + '</p></td>  </span>';
                   layer.bindPopup(html);
               }
