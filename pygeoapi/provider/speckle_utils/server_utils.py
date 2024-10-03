@@ -169,7 +169,7 @@ def get_info_from_comment(comment: Dict, project_id: str, model_id: str) -> Tupl
     res_id = model_id
     viewer_state = comment["viewerState"]
     if viewer_state is not None: # can be None for Replies
-        position: List[float] = viewer_state["ui"]["camera"]["target"]
+        position: List[float] = viewer_state["ui"]["selection"]
         try:
             res_id = viewer_state["resources"]["request"]["resourceIdString"]
         except:
