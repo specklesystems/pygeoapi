@@ -404,7 +404,12 @@
           );
 
           geojson_data = split_polygons(geojson_data_original);
-          project_url = data['speckle_url'].split("/models")[0]
+          project_url = "" 
+          try {
+            project_url = data['speckle_url'].split("/models")[0]
+          }
+          catch(err) {}
+      
 
           var items = new L.GeoJSON(geojson_data, {
               filter: (feature) => {
