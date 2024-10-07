@@ -225,7 +225,7 @@ def set_actions(self: "SpeckleProvider", client: "SpeckleClient", action: str = 
         full_dict["model"] = f"{self.project_name}, {self.model_name}"
         full_dict["time_TOTAL"] = sum([x[1] for x in self.times.items()])
         full_dict["model_url"] = self.speckle_url
-        full_dict["country_code"] = self.country_code
+        full_dict["model_country_code"] = self.country_code
         track(action, client.account, full_dict)
     except Exception as ex:
         print(f"_Cannot set action '{action}': {ex}")
