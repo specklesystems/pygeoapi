@@ -2,6 +2,7 @@
 import copy
 import math
 from typing import List
+from pygeoapi.provider.speckle_utils.legal import COUNTRY_CODES
 
 
 def reproject_bulk(self, all_coords: List[List[List[float]]], all_coord_counts: List[List[None| List[int]]], geometries) -> None:
@@ -128,6 +129,6 @@ def validate_coords(self, coords):
         print(f"Error validating project location: {e}")
     self.country_code = country_code
 
-    if country_code == "ru":
+    if country_code in COUNTRY_CODES:
         print(f"Validating project location: blocked LAT LON {coords[1]}, {coords[0]}")
         raise PermissionError("Review Speckle Terms and Conditions")

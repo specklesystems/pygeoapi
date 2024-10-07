@@ -50,6 +50,7 @@ import pygeoapi.api.maps as maps_api
 import pygeoapi.api.processes as processes_api
 import pygeoapi.api.stac as stac_api
 import pygeoapi.api.tiles as tiles_api
+from pygeoapi.provider.speckle_utils.legal import COUNTRY_CODES
 from pygeoapi.openapi import load_openapi_document
 from pygeoapi.config import get_config
 from pygeoapi.util import get_mimetype, get_api_rules, render_j2_template
@@ -211,7 +212,7 @@ def handle_client(url_route: str):
         except Exception as e:
             print(f"Error validating project location: {e}")
 
-        if country_code == "ru":
+        if country_code in COUNTRY_CODES:
             print(f"Validating project location: blocked LAT LON {lat}, {lon}")
             raise PermissionError("Review Speckle Terms and Conditions")
 
@@ -223,8 +224,11 @@ def handle_client(url_route: str):
     except Exception as e:
         print(f"Error validating client from start: {e}")
     try:
-        if data["country"] == "RU":
-            raise PermissionError("Review Speckle Terms and Conditions")
+        if isinstance(data, dict) and isinstance(data["country"], str):
+            if data["country"].lower() in COUNTRY_CODES:
+                raise PermissionError("Review Speckle Terms and Conditions")
+        else:
+            print(f"Error validating client: DATA {data}")
     except KeyError as e:
         print(f"Error validating client: {e}")
     
