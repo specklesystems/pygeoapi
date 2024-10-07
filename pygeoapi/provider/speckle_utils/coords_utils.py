@@ -13,6 +13,7 @@ def reproject_bulk(self, all_coords: List[List[List[float]]], all_coord_counts: 
     time1 = datetime.now()
     flat_coords = reproject_2d_coords_list(self, all_coords)
     time2 = datetime.now()
+    validate_coords(self, flat_coords[0])
 
     time_operation = (time2-time1).total_seconds()
     self.times["time_reproject"] = time_operation
@@ -112,3 +113,22 @@ def offset_rotate(self, coords_in: List[list]) -> List[List[float]]:
         )
 
     return final_coords
+
+def validate_coords(self, coords):
+    from geopy.geocoders import Nominatim
+    country_code = ""
+    try:
+        geolocator = Nominatim(user_agent="specklePygeoapi")        
+        coord = f"{coords[1]}, {coords[0]}"
+        location = geolocator.reverse(coord, exactly_one=True)
+        if location is not None:
+            address = location.raw['address']
+            country_code = address.get('country_code', '')
+    except Exception as e:
+        print(f"Error validating project location: {e}")
+
+    if country_code == "ru":
+        print(f"Validating project location: blocked LAT LON {coords[1]}, {coords[0]}")
+        raise PermissionError("Review Speckle Terms and Conditions")
+    else: 
+        print(f"Error validating project location: LAT LON {coords[1]}, {coords[0]}")

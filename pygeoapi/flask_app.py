@@ -39,6 +39,9 @@ from flask import (Flask, Blueprint, make_response, request,
                    send_from_directory, Response, Request, stream_with_context)
 from http import HTTPStatus
 
+import json
+from urllib.request import urlopen
+
 from pygeoapi.api import API, APIRequest, apply_gzip
 import pygeoapi.api.coverages as coverages_api
 import pygeoapi.api.environmental_data_retrieval as edr_api
@@ -169,11 +172,89 @@ def execute_from_flask(api_function, request: Request, *args,
     return get_response((headers, status, content))
 
 
+def handle_client(url_route: str):
+    try:
+        from geopy.geocoders import Nominatim
+    except ModuleNotFoundError:
+        from subprocess import run
+        import sys
+        
+        completed_process = run(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "geopy==2.4.1",
+            ],
+            capture_output=True,
+        )
+        #if completed_process.returncode != 0:
+        from geopy.geocoders import Nominatim
+
+    # if called fromm the browser, Exceptions from this function will result in infinite load
+    agent = request.headers.get('User-Agent')
+    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+        ip_address = request.environ['REMOTE_ADDR']
+    else:
+        ip_address = request.environ['HTTP_X_FORWARDED_FOR']
+
+    print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
+    print(f"_Agent {url_route}: {agent}")
+    print(f"_IP Address: {ip_address}")
+    print(f"_Request URL: {request.url}")
+    
+    request.url += f"&userAgent={agent}"
+
+    # by Agent: 
+    if agent is not None and ("YaBrowser/" in agent or "yandex" in agent.lower()):
+        raise ValueError("Your browser is not supported.")
+    
+    # by proj location:
+    url_lower = request.url.lower()
+    if "&lat=" in url_lower and "&lon=" in url_lower:
+        country_code = ""
+        try:
+            geolocator = Nominatim(user_agent="specklePygeoapi")
+            lat = float(url_lower.split("&lat=")[1].split("&")[0])
+            lon = float(url_lower.split("&lon=")[1].split("&")[0])
+            
+            coord = f"{lat}, {lon}"
+            location = geolocator.reverse(coord, exactly_one=True)
+            if location is not None:
+                address = location.raw['address']
+                country_code = address.get('country_code', '')
+        except Exception as e:
+            print(f"Error validating project location: {e}")
+
+        if country_code == "ru":
+            print(f"Validating project location: blocked LAT LON {lat}, {lon}")
+            raise PermissionError("Review Speckle Terms and Conditions")
+        else: 
+            print(f"Error validating project location: LAT LON {lat}, {lon}")
+
+    # by IP:
+    try:
+        url = 'https://ipinfo.io/' + ip_address + '/json'
+        res = urlopen(url)
+        data = json.load(res)
+    except Exception as e:
+        print(f"Error validating client from start: {e}")
+    try:
+        if data["country"] == "RU":
+            raise PermissionError("Review Speckle Terms and Conditions")
+    except KeyError as e:
+        print(f"Error validating client: {e}")
+    
 def generate():
     collection_id = "speckle"
 
     yield loading_screen().data
-    
+
+    handle_client("/")
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
+
     try:
         browser_response = execute_from_flask(itemtypes_api.get_collection_items,
                             request, collection_id,
@@ -191,38 +272,25 @@ def landing_page():
 
     :returns: HTTP response
     """
-    
-    agent = request.headers.get('User-Agent')
-    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-        ip_address = request.environ['REMOTE_ADDR']
-    else:
-        ip_address = request.environ['HTTP_X_FORWARDED_FOR']
-    print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
-    print(f"_Agent /: {agent}")
-    print(f"_IP Address: {ip_address}")
-    print(f"_Request URL: {request.url}")
-    # Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
-    # Mozilla/5.0 QGIS/32815/Windows 10 Version 2009
-    # ArcGIS Pro 3.3.0 (00000000000) - ArcGISPro
 
+    agent = request.headers.get('User-Agent')
     browser_agent = False
     browser_list = ["Chrome", "Safari", "Firefox", "Edg/", "Trident/"]
-    
-    request.url += f"&userAgent={agent}"
-    CONFIG = get_config(request=request)
-    api_ = API(CONFIG, OPENAPI)
-    
-    if agent is not None and ("YaBrowser/" in agent or "yandex" in agent.lower()):
-        raise ValueError("Your browser is not supported.")
     for br in browser_list:
         if agent is not None and br in agent:
             browser_agent = True
             break
     
+
     # if requested from the browser, return this, otherwise ignore IF statement
     if request.method == 'GET' and browser_agent:  # list items
+        print("browser")
         return Response(stream_with_context(generate()))
     
+    # for non-browsers
+    handle_client("/")
+    CONFIG = get_config(request=request)
+    api_ = API(CONFIG, OPENAPI)
     return get_response(api_.landing_page(request))
 
 def error_screen(ex: Exception):
@@ -312,16 +380,8 @@ def collections(collection_id=None):
 
 @BLUEPRINT.route('/speckle')
 def speckle_collection():
-    
-    agent = request.headers.get('User-Agent')    
-    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-        ip_address = request.environ['REMOTE_ADDR']
-    else:
-        ip_address = request.environ['HTTP_X_FORWARDED_FOR']
-    print(f"_______________________{datetime.now().astimezone(timezone.utc)} _URL access")
-    print(f"_Agent /speckle: {agent}")
-    print(f"_IP Address: {ip_address}")
-    print(f"_Request URL: {request.url}")
+
+    handle_client("/speckle")
 
     collection_id="speckle"
 

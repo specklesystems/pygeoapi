@@ -530,7 +530,7 @@ paths:
       - hello-world
 servers:
 - description: pygeoapi provides an API to geospatial data
-  url: http://localhost:5000
+  url: https://geo.speckle.systems
 tags:
 - description: pygeoapi provides an API to geospatial data
   externalDocs:
