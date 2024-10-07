@@ -128,6 +128,7 @@ class SpeckleProvider(BaseProvider):
         self.commit_gis = False
         self.url_params = {"url_data_type":"", "url_preserve_attributes":"", "url_crs_authid":"", "url_lat":"","url_lon":"","url_north_degrees":"","url_limit":""}
         self.times = {}
+        self.country_code = ""
 
         self.requested_data_type: str = "polygons (default)" # points, lines, polygons, projectcomments
         self.preserve_attributes: str = "true (default)"

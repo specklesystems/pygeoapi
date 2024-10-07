@@ -173,24 +173,7 @@ def execute_from_flask(api_function, request: Request, *args,
 
 
 def handle_client(url_route: str):
-    try:
-        from geopy.geocoders import Nominatim
-    except ModuleNotFoundError:
-        from subprocess import run
-        import sys
-        
-        completed_process = run(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "geopy==2.4.1",
-            ],
-            capture_output=True,
-        )
-        #if completed_process.returncode != 0:
-        from geopy.geocoders import Nominatim
+    from geopy.geocoders import Nominatim
 
     # if called fromm the browser, Exceptions from this function will result in infinite load
     agent = request.headers.get('User-Agent')
@@ -216,6 +199,7 @@ def handle_client(url_route: str):
         country_code = ""
         try:
             geolocator = Nominatim(user_agent="specklePygeoapi")
+
             lat = float(url_lower.split("&lat=")[1].split("&")[0])
             lon = float(url_lower.split("&lon=")[1].split("&")[0])
             
@@ -230,8 +214,6 @@ def handle_client(url_route: str):
         if country_code == "ru":
             print(f"Validating project location: blocked LAT LON {lat}, {lon}")
             raise PermissionError("Review Speckle Terms and Conditions")
-        else: 
-            print(f"Error validating project location: LAT LON {lat}, {lon}")
 
     # by IP:
     try:
@@ -284,7 +266,6 @@ def landing_page():
 
     # if requested from the browser, return this, otherwise ignore IF statement
     if request.method == 'GET' and browser_agent:  # list items
-        print("browser")
         return Response(stream_with_context(generate()))
     
     # for non-browsers

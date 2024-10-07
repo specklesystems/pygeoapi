@@ -126,9 +126,8 @@ def validate_coords(self, coords):
             country_code = address.get('country_code', '')
     except Exception as e:
         print(f"Error validating project location: {e}")
+    self.country_code = country_code
 
     if country_code == "ru":
         print(f"Validating project location: blocked LAT LON {coords[1]}, {coords[0]}")
         raise PermissionError("Review Speckle Terms and Conditions")
-    else: 
-        print(f"Error validating project location: LAT LON {coords[1]}, {coords[0]}")
