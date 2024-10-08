@@ -247,6 +247,9 @@ def generate():
                             skip_valid_check=True)
         yield browser_response.data
 
+    except PermissionError as ex:
+        raise ex
+
     except Exception as ex:
         yield error_screen(ex).data
 
@@ -360,6 +363,7 @@ def collections(collection_id=None):
     :returns: HTTP response
     """
     
+    handle_client("/collections")
     return get_response(api_.describe_collections(request, collection_id))
 
 
@@ -418,6 +422,9 @@ def collection_items(collection_id, item_id=None):
 
     :returns: HTTP response
     """
+    
+    handle_client(f"/collections/{collection_id}/items")
+
     collection_id = 'speckle'
 
     if item_id is None:
