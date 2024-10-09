@@ -2,7 +2,7 @@
 import copy
 import math
 from typing import List
-from pygeoapi.provider.speckle_utils.legal import COUNTRY_CODES
+from pygeoapi.provider.speckle_utils.legal import COUNTRY_CODES, STATES, POSTCODES
 
 
 def reproject_bulk(self, all_coords: List[List[List[float]]], all_coord_counts: List[List[None| List[int]]], geometries) -> None:
@@ -14,11 +14,12 @@ def reproject_bulk(self, all_coords: List[List[List[float]]], all_coord_counts: 
     time1 = datetime.now()
     flat_coords = reproject_2d_coords_list(self, all_coords)
     time2 = datetime.now()
-    validate_coords(self, flat_coords[0])
-
     time_operation = (time2-time1).total_seconds()
     self.times["time_reproject"] = time_operation
-    # print(f"Reproject time: {time_operation}")
+
+    validate_coords(self, flat_coords[0])
+    if len(flat_coords)>2:
+        validate_coords(self, flat_coords[len(flat_coords)-1])
 
     # define type of features
     feat_coord_group_is_multi = [True if None in x else False for x in all_coord_counts]
@@ -118,17 +119,21 @@ def offset_rotate(self, coords_in: List[list]) -> List[List[float]]:
 def validate_coords(self, coords):
     from geopy.geocoders import Nominatim
     country_code = ""
+    state = ""
+    postcode = ""
     try:
-        geolocator = Nominatim(user_agent="specklePygeoapi")        
+        geolocator = Nominatim(user_agent="specklePygeoapi")
         coord = f"{coords[1]}, {coords[0]}"
         location = geolocator.reverse(coord, exactly_one=True)
         if location is not None:
             address = location.raw['address']
             country_code = address.get('country_code', '')
+            state = address.get('state', '')
+            postcode = address.get('postcode', '')
     except Exception as e:
         print(f"Error validating project location: {e}")
     self.country_code = country_code
-
-    if country_code in COUNTRY_CODES:
-        print(f"Validating project location: blocked LAT LON {coords[1]}, {coords[0]}")
+    
+    if country_code in COUNTRY_CODES or state in STATES or postcode in POSTCODES:
+        print(f"Validating project location: blocked LAT LON {coords[1]}, {coords[0]}, {country_code}, {state}, {postcode}")
         raise PermissionError("Review Speckle Terms and Conditions")

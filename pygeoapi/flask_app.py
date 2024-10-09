@@ -174,7 +174,6 @@ def execute_from_flask(api_function, request: Request, *args,
 
 
 def handle_client(url_route: str):
-    from geopy.geocoders import Nominatim
 
     # if called fromm the browser, Exceptions from this function will result in infinite load
     agent = request.headers.get('User-Agent')
@@ -194,28 +193,6 @@ def handle_client(url_route: str):
     if agent is not None and ("YaBrowser/" in agent or "yandex" in agent.lower()):
         raise ValueError("Your browser is not supported.")
     
-    # by proj location:
-    url_lower = request.url.lower()
-    if "&lat=" in url_lower and "&lon=" in url_lower:
-        country_code = ""
-        try:
-            geolocator = Nominatim(user_agent="specklePygeoapi")
-
-            lat = float(url_lower.split("&lat=")[1].split("&")[0])
-            lon = float(url_lower.split("&lon=")[1].split("&")[0])
-            
-            coord = f"{lat}, {lon}"
-            location = geolocator.reverse(coord, exactly_one=True)
-            if location is not None:
-                address = location.raw['address']
-                country_code = address.get('country_code', '')
-        except Exception as e:
-            print(f"Error validating project location: {e}")
-
-        if country_code in COUNTRY_CODES:
-            print(f"Validating project location: blocked LAT LON {lat}, {lon}")
-            raise PermissionError("Review Speckle Terms and Conditions")
-
     # by IP:
     try:
         url = 'https://ipinfo.io/' + ip_address + '/json'
