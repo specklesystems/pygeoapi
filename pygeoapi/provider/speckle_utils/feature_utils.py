@@ -169,7 +169,7 @@ def initialize_features(self: "SpeckleProvider", all_coords, all_coord_counts, d
         ########################
 
     if len(data["features"])==0 and len(data["comments"])==0:
-        raise ValueError(f"No supported features found. Make sure correct DataType is requested. Current DataType='{self.requested_data_type}'")
+        raise ValueError(f"No supported features of type '{self.requested_data_type}' found. Make sure correct type is requested by adding a URL parameter (e.g. '&dataType=points').")
     
     time2 = datetime.now()
 
