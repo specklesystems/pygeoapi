@@ -202,7 +202,7 @@
                   <tr>
                       {% set title_field = data.title_field %}
                       <td data-label="{{ title_field }}">
-                        <a title="{{ ft.properties.get(title_field) }}" href="{{ data['speckle_project_url'] }}/models/{{ft.id.split('_')[0]}}" target="_blank">
+                        <a title="{{ ft.properties.get(title_field) }}" href="{{data['speckle_url'].split('/models')[0]}}/models/{{ft.id.split('_')[0]}}" target="_blank">
                           {{ ft.properties.get(title_field) | string | truncate( 35 ) }}
                         </a>
                       </td>
