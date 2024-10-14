@@ -121,6 +121,7 @@ class SpeckleProvider(BaseProvider):
         self.speckle_data = None
         self.project_name = ""
         self.model_name = ""
+        self.sourceApp = ""
 
         self.crs = None
         self.crs_dict = None
@@ -385,6 +386,7 @@ class SpeckleProvider(BaseProvider):
 
         commit = branch["commits"]["items"][0]
         objId = commit["referencedObject"]
+        self.sourceApp = commit["sourceApplication"]
 
         transport = ServerTransport(client=client, account=client.account, stream_id=wrapper.stream_id)
         if transport == None:
@@ -457,13 +459,17 @@ class SpeckleProvider(BaseProvider):
             "extent": [-180,-90,180,90],
             "model_crs": "-",
         }
+
+        # rule to keep traversing the object's "x" attribute "item" (both conditions need to be fulfilled)
+        # 1. if the item type is not in supported (convertible) types or is GIS VectorLayer
+        # 2. if the item's value is a list or a GH object 
         rule = TraversalRule(
             [lambda _: True],
             lambda x: [
                 item
                 for item in x.get_member_names()
                 if (x.speckle_type.split(":")[-1] not in supported_types or isinstance(x, VectorLayer))
-                and (isinstance(getattr(x, item, None), list) or (item.startswith("@") and x.speckle_type == "Base") )
+                and (isinstance(getattr(x, item, None), list) or ("grasshopper" in self.sourceApp.lower() and x.speckle_type == "Base") )
             ],
         )
         context_list = [x for x in GraphTraversal([rule]).traverse(commit_obj)]
