@@ -198,16 +198,13 @@ def handle_client(url_route: str):
         url = 'https://ipinfo.io/' + ip_address + '/json'
         res = urlopen(url)
         data = json.load(res)
-    except Exception as e:
-        print(f"Error validating client from start: {e}")
-    try:
         if isinstance(data, dict) and isinstance(data["country"], str):
             if data["country"].lower() in COUNTRY_CODES:
                 raise PermissionError("Review Speckle Terms and Conditions")
         else:
             print(f"Error validating client: DATA {data}")
-    except KeyError as e:
-        print(f"Error validating client: {e}")
+    except Exception as e:
+        print(f"Error validating client from start: {e}")
     
 def generate():
     collection_id = "speckle"
